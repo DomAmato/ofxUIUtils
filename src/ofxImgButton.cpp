@@ -68,44 +68,6 @@ void ofxImgButton::draw(){
 		buttonImg.draw(button.x, button.y, button.width, button.height);
 	}
 }
-void ofxImgButton::setImage(string imageName){
-	buttonImg.loadImage(imageName);
-}
-void ofxImgButton::setToggleImage(string imageName){
-	buttonImgToggle.loadImage(imageName);
-}
-
-void ofxImgButton::setWidth(int w){
-	button.width = w;
-}
-void ofxImgButton::setHeight(int h){
-	button.height = h;
-}
-float ofxImgButton::getWidth(){
-	return button.width;
-}
-float ofxImgButton::getHeight(){
-	return button.height;
-}
-void ofxImgButton::setWidthPercent(float w){
-	button.width *= w;
-}
-void ofxImgButton::setHeightPercent(float h){
-	button.height *= h;
-}
-
-void  ofxImgButton::setPosition(int x, int y){
-	button.x = x;
-	button.y = y;
-}
-void  ofxImgButton::setPosition(ofPoint p){
-	button.x = p.x;
-	button.y = p.y;
-}
-
-void ofxImgButton::setToggle(bool state){
-	value = state;
-}
 
 /*
 *****************************************************
@@ -114,9 +76,12 @@ void ofxImgButton::setToggle(bool state){
 */
 
 void ofxImgButton::mouseReleased(ofMouseEventArgs & args){
-	if (button.inside(args.x, args.y)){
-		value = !value;
-		ofNotifyEvent(buttonEvent, value, this);
+	if (args.button == 0){
+		if (button.inside(args.x, args.y)){
+			value = !value;
+			pair<bool, int> temp(value, ID);
+			ofNotifyEvent(imgButtonEvent, temp, this);
+		}
 	}
 }
 

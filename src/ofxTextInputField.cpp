@@ -48,7 +48,7 @@ ofxTextInputField::ofxTextInputField() {
 	autoClear = false;
 	mouseDownInRect = false;
 
-	fontRef = new ofxTextInput::BitmapFontRenderer();
+	fontRef = new ofxUIUtils::BitmapFontRenderer();
 	
 	verticalPadding = 3;
 	horizontalPadding = 3;
@@ -71,11 +71,11 @@ void ofxTextInputField::setFont(OFX_TEXTFIELD_FONT_RENDERER & font){
 	if (fontRef->isBitmapFont()) {
 		delete fontRef;
 	}
-	fontRef = new ofxTextInput::TypedFontRenderer(&font);
+	fontRef = new ofxUIUtils::TypedFontRenderer(&font);
 }
 
 //----------
-ofxTextInput::FontRenderer * ofxTextInputField::getFontRenderer() {
+ofxUIUtils::FontRenderer * ofxTextInputField::getFontRenderer() {
 	return this->fontRef;
 }
 

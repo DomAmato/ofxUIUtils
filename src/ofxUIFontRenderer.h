@@ -15,8 +15,23 @@
  *  ofxTextInputFieldFontRenderer.h, created by Marek Bereza on 14/08/2013.
  */
 
+#pragma once
 
-namespace ofxTextInput {
+//For lack of a type abstraction, this lets you #define a font renderer so
+//(like ofxFTGL or ofxFont)
+//to use ofxFTGL use somethinglike this:
+//#define OFX_TEXTFIELD_FONT_RENDERER ofxFTGLFont
+//#define OFX_TEXTFIELD_FONT_INCLUDE "ofxFTGLFont.h"
+
+#ifndef OFX_TEXTFIELD_FONT_RENDERER
+#define OFX_TEXTFIELD_FONT_RENDERER ofTrueTypeFont
+#endif 
+
+#ifdef OFX_TEXTFIELD_FONT_INCLUDE
+#include OFX_TEXTFIELD_FONT_INCLUDE
+#endif
+
+namespace ofxUIUtils {
 	class FontRenderer {
 	public:
 		virtual ~FontRenderer() {}

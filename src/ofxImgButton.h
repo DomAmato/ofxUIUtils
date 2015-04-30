@@ -4,7 +4,7 @@
 #include "ofMain.h"
 
 class ofxImgButton{
-	
+
 public:
 	ofxImgButton();
 	~ofxImgButton();
@@ -14,18 +14,34 @@ public:
 	void draw(int x, int y);
 	void draw(ofPoint p);
 	void draw();
-	void setImage(string imageName);
-	void setToggleImage(string imageName);
-	void setWidth(int w);
-	void setHeight(int h);
-	float getWidth();
-	float getHeight();
-	void setWidthPercent(float w);
-	void setHeightPercent(float h);
-	void setPosition(int x, int y);
-	void setPosition(ofPoint p);
-	void setToggle(bool state);
 
+	void setImage(string imageName) { buttonImg.loadImage(imageName); }
+	void setToggleImage(string imageName){ buttonImgToggle.loadImage(imageName); }
+	void setWidth(int w) { button.width = w; }
+	void setHeight(int h) { button.height = h; }
+	void setID(int newId) { ID = newId; }
+	void setWidthPercent(float w){ button.width *= w; }
+	void setHeightPercent(float h){ button.height *= h; }
+	void setPosition(int x, int y){
+		button.x = x;
+		button.y = y;
+	}
+	void setPosition(ofPoint p) { setPosition(p.x, p.y); }
+	void setToggle(bool state){ value = state; }
+
+	float getWidth() { return button.width; }
+	float getHeight(){ return button.height; }
+
+
+
+	void mouseReleased(ofMouseEventArgs & args);
+	void mouseMoved(ofMouseEventArgs & args);
+	void mousePressed(ofMouseEventArgs & args);
+	void mouseDragged(ofMouseEventArgs & args);
+
+	ofEvent<const pair<bool, int>> imgButtonEvent;
+
+private:
 
 	ofRectangle button;
 	bool		isToggle;
@@ -33,11 +49,8 @@ public:
 	ofImage		buttonImg;
 	ofImage		buttonImgToggle;
 
-	void mouseReleased(ofMouseEventArgs & args);
-	void mouseMoved(ofMouseEventArgs & args);
-	void mousePressed(ofMouseEventArgs & args);
-	void mouseDragged(ofMouseEventArgs & args);
+	int			ID;
 
-	ofEvent<const bool> buttonEvent;
+
 
 };
