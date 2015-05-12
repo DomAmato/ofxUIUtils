@@ -3,6 +3,7 @@
 #include "ofMain.h"
 #include "ofxUIButton.h"
 #include "ofParameter.h"
+#include "ofBitmapFont.h"
 
 
 class ofxUIMenuItem {
@@ -45,8 +46,8 @@ public:
 			dist = ofDist(x + (w / 2), 0, ofGetMouseX(), 0);
 			float    disty = ofDist(0, y + (h / 2), 0, ofGetMouseY());
 			if (dist < w / 2 && disty < h / 2)
-				isActive_ = true; 
-			else 
+				isActive_ = true;
+			else
 				isActive_ = false;
 		}
 		if (isActive_){
@@ -54,12 +55,11 @@ public:
 			ofRect(x, y, w, h);
 		}
 		ofSetColor(textColor);
-		ofDrawBitmapString(title, x + ((w / 2) - (title.size() * 5)), y + (h / 2) + (h / 4));
+		ofDrawBitmapString(title, x + 5, y + (h / 2) + (h / 4));
 
-		ofSetColor(0,255);
+		ofSetColor(0, 255);
 		ofSetLineWidth(.25);
 		ofLine(x, y + h, x + w, y + h);
-
 		ofPopStyle();
 	}
 
@@ -91,8 +91,16 @@ public:
 	void setPosition(int x, int y){ mainPanel->setPosition(x, y); }
 	void setWidth(float width){ mainPanel->setWidth(width); }
 	void setHeight(float height){ mainPanel->setHeight(height); }
-	void setButtonFont(ofTrueTypeFont newFont) { mainPanel->setFont(newFont); }
+	void setButtonFont(ofTrueTypeFont &newFont) { mainPanel->setFont(newFont); }
 	void setButtonTitle(string name){ mainPanel->setTitle(name); }
+	void setButtonColor(ofColor c) { mainPanel->setColor(c); }
+	void setButtonColor(int r, int g, int b, int a = 255) { mainPanel->setColor(r, g, b, a); }
+	void setButtonHoverColor(ofColor c) { mainPanel->setHoverColor(c); }
+	void setButtonHoverColor(int r, int g, int b, int a = 255) { mainPanel->setHoverColor(r, g, b, a); }
+	void setButtonTextColor(ofColor c) { mainPanel->setTextColor(c); }
+	void setButtonTextColor(int r, int g, int b, int a = 255) { mainPanel->setTextColor(r, g, b, a); }
+	void setID(int newID){ _ID = newID; }
+	void setAutoSizing(bool state) { mainPanel->buttonAutoSizes(state); }
 
 	void draw();
 
@@ -110,6 +118,7 @@ public:
 
 	void Hide(){ toggled = false; }
 	string getSelection() { return selection; }
+	bool getToggled() { return toggled; }
 
 	ofEvent<const pair<string, int>> menuEvent;
 
@@ -122,8 +131,9 @@ private:
 	ofxUIButton * mainPanel;
 	ofPoint menuPos;
 	string selection;
-	int IDs;
+	int IDs, _ID;
 	long toggleTimer;
+	int _width, _height, _cellHeight;
 };
 
 

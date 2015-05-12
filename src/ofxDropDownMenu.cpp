@@ -4,33 +4,34 @@ ofxDropDownMenu::ofxDropDownMenu(){
 
 	ofRegisterMouseEvents(this);
 	ofRegisterKeyEvents(this);
-	font.loadFont(OF_TTF_SERIF, 18);
+	//font.loadFont(OF_TTF_SERIF, 12);
 	mainPanel = new ofxUIButton();
 	selection = "-- Menu --";
 	mainPanel->setTitle(selection);
 	mainPanel->setToggleMode(true);
-	mainPanel->setFont(font);
+	//mainPanel->setFont(font);
 	toggled = false;
 	toggleTimer = 0;
 	IDs = 0;
+	_ID = 0;
+	_cellHeight = 25;
 	ofAddListener(mainPanel->buttonEvent, this, &ofxDropDownMenu::UIButPressed);
 }
 
 void ofxDropDownMenu::draw(){
 
 	ofPushStyle();
-	int x, y, w, h, cellHeight;
-	cellHeight = 25;
+	int x, y;
 	mainPanel->draw();
 
 	if (toggled){
+		ofPushMatrix();
+		ofTranslate(0, 0, 1);
 		x = menuPos.x;
 		y = menuPos.y;
-		w = 100;
-		h = cellHeight*menuItems.size() + 5;
 
 		ofSetColor(225, 240);
-		ofRect(x - 5, y - 5, w, h);
+		ofRect(x - 5, y - 5, _width, _height);
 
 		int color_forText = 0;
 
@@ -41,10 +42,14 @@ void ofxDropDownMenu::draw(){
 			else {
 				menuItems[i].setTextColor(ofColor::black);
 			}
-			menuItems[i].draw(x - 5, (i*cellHeight) + y, w, cellHeight);
+			menuItems[i].draw(x - 5, i*_cellHeight + y, _width, _cellHeight);
 
 		}
+		ofTranslate(0, 0, -1);
+	//	glDisable(GL_DEPTH_TEST);
+		ofPopMatrix();
 	}
+	
 	ofPopStyle();
 }
 
@@ -61,6 +66,9 @@ void ofxDropDownMenu::addMenuItem(string name){
 	temp.setVisible(true);
 	temp.setID(IDs++);
 	menuItems.push_back(temp);
+	if (_width < ofBitmapStringGetBoundingBox(name, 0, 0).width)
+		_width = ofBitmapStringGetBoundingBox(name, 0, 0).width + 10;
+	_height = (_cellHeight * menuItems.size() + 5);
 }
 
 void ofxDropDownMenu::removeMenuItem(string name){
@@ -86,7 +94,7 @@ void ofxDropDownMenu::mouseReleased(ofMouseEventArgs& eventArgs){
 			if (menuItems[i].isActive()){
 				toggleTimer = ofGetElapsedTimeMillis();
 				selection = menuItems[i].getTitle();
-				pair<string, int> temp(selection, menuItems[i].getID());
+				pair<string, int> temp(selection, _ID);
 				ofNotifyEvent(menuEvent, temp, this);
 			}
 		}
@@ -101,7 +109,11 @@ void ofxDropDownMenu::UIButPressed(const pair<bool, int> & state){
 		selection = mainPanel->getTitle();
 		toggled = true;
 		menuPos.x = ofGetMouseX();
+		if (menuPos.x + _width > ofGetWidth())
+			menuPos.x = ofGetWidth() - (_width + 5);
 		menuPos.y = ofGetMouseY();
+		if (menuPos.y + _height > ofGetHeight())
+			menuPos.y = ofGetHeight() - (_height + 5);
 	}
 	else {
 		toggled = false;

@@ -14,6 +14,7 @@ ofxUIButton::ofxUIButton() {
 	textColor.set(ofColor::black);
 	togglable = false;
 	dist = 0;
+	_autoSize = false;
 
 	buttonStyle = UI_BUTTON_RECT;
 
@@ -49,6 +50,8 @@ void ofxUIButton::draw(){
 		else {
 			ofSetColor(color);
 		}
+		if (_w < fontRef->stringWidth(title) + 10)
+			_w = fontRef->stringWidth(title) + 10;
 		switch (buttonStyle){
 		case UI_BUTTON_RECT:
 			ofRect(_x, _y, _w, _h);
@@ -63,11 +66,10 @@ void ofxUIButton::draw(){
 			ofRect(_x, _y, _w, _h);
 			break;
 		}
-		
+
 
 		ofSetColor(textColor);
-		fontRef->drawString(title, _x + ((_w / 2) - (title.size() * 5)), _y + (_h / 2) + (_h / 4));
-
+		fontRef->drawString(title, _x + ((_w / 2) - fontRef->stringWidth(title) / 2), _y + (_h / 2) + (_h / 4));
 
 		ofSetColor(255);
 	}
@@ -98,7 +100,7 @@ void ofxUIButton::mouseReleased(ofMouseEventArgs & args){
 void ofxUIButton::mouseMoved(ofMouseEventArgs & args){
 	if (clickable){
 		dist = ofDist(_x + (_w / 2), 0, args.x, 0);
-		float disty = ofDist(0, _y + (_h / 2), 0,args.y);
+		float disty = ofDist(0, _y + (_h / 2), 0, args.y);
 		if (dist < _w / 2 && disty < _h / 2){
 			hovering = true;
 		}
