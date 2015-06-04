@@ -48,7 +48,7 @@ public:
 	void mousePressed(ofMouseEventArgs & args);
 	void mouseReleased(ofMouseEventArgs& eventArgs);
 
-	ofEvent<const pair<bool, int>> buttonEvent;
+	ofEvent<const pair<bool, int> > buttonEvent;
 
 	void draw(int x, int y, int w, int h, ofColor textCol = ofColor::black){ _x = x; _y = y; _w = w; _h = h; draw(); }
 	void draw(int x, int y) { _x = x; _y = y; draw(); }

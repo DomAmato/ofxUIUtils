@@ -39,7 +39,7 @@ public:
 	void mousePressed(ofMouseEventArgs & args);
 	void mouseDragged(ofMouseEventArgs & args);
 
-	ofEvent<const pair<bool, int>> imgButtonEvent;
+	ofEvent<const pair<bool, int> > imgButtonEvent;
 
 private:
 

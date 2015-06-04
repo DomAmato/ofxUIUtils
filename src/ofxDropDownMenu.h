@@ -119,8 +119,9 @@ public:
 	void Hide(){ toggled = false; }
 	string getSelection() { return selection; }
 	bool getToggled() { return toggled; }
+	void setToggled(bool mode) { toggled = mode; mainPanel->setToggle(mode); }
 
-	ofEvent<const pair<string, int>> menuEvent;
+	ofEvent<const pair<string, int> > menuEvent;
 
 	void UIButPressed(const pair<bool, int> & state);
 

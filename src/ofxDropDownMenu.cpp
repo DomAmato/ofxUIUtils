@@ -4,12 +4,10 @@ ofxDropDownMenu::ofxDropDownMenu(){
 
 	ofRegisterMouseEvents(this);
 	ofRegisterKeyEvents(this);
-	//font.loadFont(OF_TTF_SERIF, 12);
 	mainPanel = new ofxUIButton();
 	selection = "-- Menu --";
 	mainPanel->setTitle(selection);
-	mainPanel->setToggleMode(true);
-	//mainPanel->setFont(font);
+	//mainPanel->setToggleMode(true);
 	toggled = false;
 	toggleTimer = 0;
 	IDs = 0;
@@ -46,7 +44,6 @@ void ofxDropDownMenu::draw(){
 
 		}
 		ofTranslate(0, 0, -1);
-	//	glDisable(GL_DEPTH_TEST);
 		ofPopMatrix();
 	}
 	
@@ -88,8 +85,8 @@ void ofxDropDownMenu::clearMenuItems(){
 }
 
 void ofxDropDownMenu::mouseReleased(ofMouseEventArgs& eventArgs){
-
-	if (eventArgs.button == 0 && toggled){
+	
+	if (eventArgs.button == 0 && toggled  && ofGetElapsedTimeMillis() - toggleTimer > 500){
 		for (int i = 0; i < menuItems.size(); i++) {
 			if (menuItems[i].isActive()){
 				toggleTimer = ofGetElapsedTimeMillis();
@@ -98,7 +95,7 @@ void ofxDropDownMenu::mouseReleased(ofMouseEventArgs& eventArgs){
 				ofNotifyEvent(menuEvent, temp, this);
 			}
 		}
-		mainPanel->setToggle(false);
+	//	mainPanel->setToggle(false);
 		toggled = false;
 	}
 }
@@ -117,6 +114,6 @@ void ofxDropDownMenu::UIButPressed(const pair<bool, int> & state){
 	}
 	else {
 		toggled = false;
-		mainPanel->setToggle(false);
+		//mainPanel->setToggle(false);
 	}
 }
