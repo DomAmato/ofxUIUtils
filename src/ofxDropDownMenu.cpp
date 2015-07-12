@@ -7,7 +7,10 @@ ofxDropDownMenu::ofxDropDownMenu(){
 	mainPanel = new ofxUIButton();
 	selection = "-- Menu --";
 	mainPanel->setTitle(selection);
-	//mainPanel->setToggleMode(true);
+	mainPanel->setToggleMode(true);
+    mainPanel->setPosition(0,0);
+    //evidently if this isn't set it can sometimes never be initialized?
+    mainPanel->setWidth(30);
 	toggled = false;
 	toggleTimer = 0;
 	IDs = 0;
@@ -17,10 +20,10 @@ ofxDropDownMenu::ofxDropDownMenu(){
 }
 
 void ofxDropDownMenu::draw(){
-
 	ofPushStyle();
+    ofPushMatrix();
 	int x, y;
-	mainPanel->draw();
+    mainPanel->draw();
 
 	if (toggled){
 		ofPushMatrix();
@@ -46,7 +49,7 @@ void ofxDropDownMenu::draw(){
 		ofTranslate(0, 0, -1);
 		ofPopMatrix();
 	}
-	
+    ofPopMatrix();
 	ofPopStyle();
 }
 
@@ -85,8 +88,8 @@ void ofxDropDownMenu::clearMenuItems(){
 }
 
 void ofxDropDownMenu::mouseReleased(ofMouseEventArgs& eventArgs){
-	
-	if (eventArgs.button == 0 && toggled  && ofGetElapsedTimeMillis() - toggleTimer > 500){
+
+	if (eventArgs.button == 0 && toggled){
 		for (int i = 0; i < menuItems.size(); i++) {
 			if (menuItems[i].isActive()){
 				toggleTimer = ofGetElapsedTimeMillis();
@@ -95,7 +98,7 @@ void ofxDropDownMenu::mouseReleased(ofMouseEventArgs& eventArgs){
 				ofNotifyEvent(menuEvent, temp, this);
 			}
 		}
-	//	mainPanel->setToggle(false);
+		mainPanel->setToggle(false);
 		toggled = false;
 	}
 }
@@ -114,6 +117,6 @@ void ofxDropDownMenu::UIButPressed(const pair<bool, int> & state){
 	}
 	else {
 		toggled = false;
-		//mainPanel->setToggle(false);
+		mainPanel->setToggle(false);
 	}
 }
