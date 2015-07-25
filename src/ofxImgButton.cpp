@@ -1,26 +1,31 @@
 #include "ofxImgButton.h"
 
-ofxImgButton::ofxImgButton(){
+ofxImgButton::ofxImgButton() {
+	visible = true;
+	hovering = false;
+	clickable = true;
+	toggle = false;
+	ID = 0;
+	togglable = false;
+	dist = 0;
 }
 
-ofxImgButton::~ofxImgButton(){
+ofxImgButton::~ofxImgButton() {
 	//
 }
 
-void ofxImgButton::setup(string imageName, float width, float height){
+void ofxImgButton::setup(string imageName, float width, float height) {
 	buttonImg.loadImage(imageName);
 	button.x = 0;
 	button.y = 0;
-	button.width =  (width > 0) ? width : buttonImg.getWidth();
+	button.width = (width > 0) ? width : buttonImg.getWidth();
 	button.height = (height > 0) ? height : buttonImg.getHeight();
-	value = false;
-	isToggle = false;
+	toggle = false;
 
 	ofRegisterMouseEvents(this, OF_EVENT_ORDER_BEFORE_APP);
-
 }
 
-void ofxImgButton::setup(string imgName, string imgToggleName, float width, float height){
+void ofxImgButton::setup(string imgName, string imgToggleName, float width, float height) {
 	buttonImg.loadImage(imgName);
 	buttonImgToggle.loadImage(imgToggleName);
 
@@ -28,41 +33,41 @@ void ofxImgButton::setup(string imgName, string imgToggleName, float width, floa
 	button.y = 0;
 	button.width = (width > 0) ? width : buttonImg.getWidth();
 	button.height = (height > 0) ? height : buttonImg.getHeight();
-	value = false;
-	isToggle = true;
+	togglable = true;
+	toggle = false;
 
-	
+
 
 	ofRegisterMouseEvents(this, OF_EVENT_ORDER_BEFORE_APP);
 
 }
 
-void ofxImgButton::draw(int x, int y, int w, int h){
+void ofxImgButton::draw(int x, int y, int w, int h) {
 	button.x != x ? button.x = x : 0;
 	button.y != y ? button.y = y : 0;
 	button.width != w ? button.width = w : 0;
 	button.height != h ? button.height = h : 0;
 	draw();
 }
-void ofxImgButton::draw(int x, int y){
+void ofxImgButton::draw(int x, int y) {
 	button.x != x ? button.x = x : 0;
 	button.y != y ? button.y = y : 0;
 	draw();
 }
-void ofxImgButton::draw(ofPoint p){
+void ofxImgButton::draw(ofPoint p) {
 	button.x != p.x ? button.x = p.x : 0;
 	button.y != p.y ? button.y = p.y : 0;
 	draw();
 }
-void ofxImgButton::draw(){
-	if (isToggle){
-		if (!value){
+void ofxImgButton::draw() {
+	if (togglable) {
+		if (!toggle) {
 			buttonImg.draw(button.x, button.y, button.width, button.height);
 		}
 		else {
 			buttonImgToggle.draw(button.x, button.y, button.width, button.height);
 		}
-		
+
 	}
 	else {
 		buttonImg.draw(button.x, button.y, button.width, button.height);
@@ -75,24 +80,40 @@ void ofxImgButton::draw(){
 *****************************************************
 */
 
-void ofxImgButton::mouseReleased(ofMouseEventArgs & args){
-	if (args.button == 0){
-		if (button.inside(args.x, args.y)){
-			value = !value;
-			pair<bool, int> temp(value, ID);
-			ofNotifyEvent(imgButtonEvent, temp, this);
+void ofxImgButton::mouseReleased(ofMouseEventArgs & args) {
+	if (clickable && args.button == 0) {
+		if (hovering) {
+			if (togglable) {
+				toggle = !toggle;
+				pair<bool, int> temp(toggle, ID);
+				ofNotifyEvent(imgButtonEvent, temp, this);
+			}
+			else {
+				pair<bool, int> temp(false, ID);
+				ofNotifyEvent(imgButtonEvent, temp, this);
+			}
 		}
 	}
 }
 
-void ofxImgButton::mouseMoved(ofMouseEventArgs & args){
-	//
+void ofxImgButton::mouseMoved(ofMouseEventArgs & args) {
+	if (clickable) {
+		if (button.inside(args.x, args.y)) {
+			hovering = true;
+		}
+		else {
+			hovering = false;
+		}
+	}
 }
 
-void ofxImgButton::mousePressed(ofMouseEventArgs & args){
-	//
+void ofxImgButton::mousePressed(ofMouseEventArgs & args) {
+	if (clickable && args.button == 0 && !togglable && hovering) {
+		pair<bool, int> temp(true, ID);
+		ofNotifyEvent(imgButtonEvent, temp, this);
+	}
 }
 
-void ofxImgButton::mouseDragged(ofMouseEventArgs & args){
+void ofxImgButton::mouseDragged(ofMouseEventArgs & args) {
 	//
 }

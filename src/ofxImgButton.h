@@ -27,7 +27,9 @@ public:
 		button.y = y;
 	}
 	void setPosition(ofPoint p) { setPosition(p.x, p.y); }
-	void setToggle(bool state){ value = state; }
+	void setToggle(bool state){ toggle = state; }
+	void setToggleMode(bool mode) { togglable = mode; }
+
 
 	float getWidth() { return button.width; }
 	float getHeight(){ return button.height; }
@@ -43,14 +45,13 @@ public:
 
 private:
 
+	float dist;
+
 	ofRectangle button;
-	bool		isToggle;
-	bool		value;
+	bool visible, hovering, togglable, toggle, clickable;
 	ofImage		buttonImg;
 	ofImage		buttonImgToggle;
 
 	int			ID;
-
-
 
 };
