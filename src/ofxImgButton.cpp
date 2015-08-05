@@ -20,6 +20,7 @@ void ofxImgButton::setup(string imageName, float width, float height) {
 	button.y = 0;
 	button.width = (width > 0) ? width : buttonImg.getWidth();
 	button.height = (height > 0) ? height : buttonImg.getHeight();
+	togglable = false;
 	toggle = false;
 
 	ofRegisterMouseEvents(this, OF_EVENT_ORDER_BEFORE_APP);
@@ -82,7 +83,7 @@ void ofxImgButton::draw() {
 
 void ofxImgButton::mouseReleased(ofMouseEventArgs & args) {
 	if (clickable && args.button == 0) {
-		if (hovering) {
+		if (button.inside(args.x, args.y)) {
 			if (togglable) {
 				toggle = !toggle;
 				pair<bool, int> temp(toggle, ID);
@@ -108,7 +109,7 @@ void ofxImgButton::mouseMoved(ofMouseEventArgs & args) {
 }
 
 void ofxImgButton::mousePressed(ofMouseEventArgs & args) {
-	if (clickable && args.button == 0 && !togglable && hovering) {
+	if (clickable && args.button == 0 && !togglable && button.inside(args.x, args.y)) {
 		pair<bool, int> temp(true, ID);
 		ofNotifyEvent(imgButtonEvent, temp, this);
 	}

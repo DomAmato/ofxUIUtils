@@ -34,7 +34,7 @@ public:
 	float getWidth() { return button.width; }
 	float getHeight(){ return button.height; }
 
-
+	void setClickable(bool mode) { clickable = mode; }
 
 	void mouseReleased(ofMouseEventArgs & args);
 	void mouseMoved(ofMouseEventArgs & args);

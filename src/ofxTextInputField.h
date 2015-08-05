@@ -21,6 +21,8 @@
 #define TEXTFIELD_IS_ACTIVE "textfieldIsActive"
 #define TEXTFIELD_IS_INACTIVE "textfieldIsInactive"
 
+#define USE_GLFW_CLIPBOARD
+
 #include "ofxUIFontRenderer.h"
 
 class ofxTextInputField {
@@ -72,6 +74,8 @@ class ofxTextInputField {
 	void mousePressed(ofMouseEventArgs& args);
 	void mouseDragged(ofMouseEventArgs& args);
 	void mouseReleased(ofMouseEventArgs& args);
+
+	bool getCMDHeld() { return commandHeld; }
 
 	bool autoClear;
 	bool autoTab;

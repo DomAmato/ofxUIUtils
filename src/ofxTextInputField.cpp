@@ -36,18 +36,18 @@ ofxTextInputField::ofxTextInputField() {
 }
 
 //----------
-ofxTextInputField::~ofxTextInputField(){
+ofxTextInputField::~ofxTextInputField() {
 	this->removeListeners();
 }
 
 //----------
-void ofxTextInputField::setup(bool enableListeners){
+void ofxTextInputField::setup(bool enableListeners) {
 	enable();
 	this->setUseListeners(enableListeners);
 }
 
 //----------
-void ofxTextInputField::setFont(OFX_TEXTFIELD_FONT_RENDERER & font){
+void ofxTextInputField::setFont(OFX_TEXTFIELD_FONT_RENDERER & font) {
 	if (fontRef->isBitmapFont()) {
 		delete fontRef;
 	}
@@ -60,18 +60,18 @@ ofxUIUtils::FontRenderer * ofxTextInputField::getFontRenderer() {
 }
 
 //----------
-void ofxTextInputField::enable(){
-	if (!this->enabled){
+void ofxTextInputField::enable() {
+	if (!this->enabled) {
 		this->enabled = true;
 	}
 }
 
 //----------
-void ofxTextInputField::disable(){
-	if (this->editing){
+void ofxTextInputField::disable() {
+	if (this->editing) {
 		endEditing();
 	}
-	if (this->enabled){
+	if (this->enabled) {
 		this->enabled = false;
 	}
 
@@ -84,7 +84,7 @@ bool ofxTextInputField::isEnabled() const {
 
 //----------
 void ofxTextInputField::beginEditing() {
-	if (!this->editing){
+	if (!this->editing) {
 		ofSendMessage(TEXTFIELD_IS_ACTIVE);
 		this->editing = true;
 		drawCursor = true;
@@ -96,7 +96,7 @@ void ofxTextInputField::beginEditing() {
 
 //----------
 void ofxTextInputField::endEditing() {
-	if (this->editing){
+	if (this->editing) {
 		ofSendMessage(TEXTFIELD_IS_INACTIVE);
 		this->editing = false;
 		this->drawCursor = false;
@@ -162,14 +162,14 @@ void ofxTextInputField::draw() {
 
 			// multiline selection.
 			// do first line to the end
-			ofRect(horizontalPadding + startX, verticalPadding + fontRef->getLineHeight()*beginCursorY,
+			ofRect(horizontalPadding + startX, verticalPadding + 3 + fontRef->getLineHeight()*beginCursorY,
 				fontRef->stringWidth(lines[beginCursorY]) - startX,
 				fontRef->getLineHeight()
 				);
 
 			// loop through entirely selected lines
 			for (int i = beginCursorY + 1; i < endCursorY; i++) {
-				ofRect(horizontalPadding, verticalPadding + fontRef->getLineHeight()*i,
+				ofRect(horizontalPadding, verticalPadding + 3 + fontRef->getLineHeight()*i,
 					fontRef->stringWidth(lines[i]),
 					fontRef->getLineHeight()
 					);
@@ -203,12 +203,12 @@ void ofxTextInputField::draw() {
 		int cursorX, cursorY;
 		getCursorCoords(cursorPosition, cursorX, cursorY);
 		//	printf("Pos: %d    X: %d   Y: %d\n", cursorPosition, cursorX, cursorY);
-		int cursorPos = horizontalPadding + fontRef->stringWidth(lines[cursorY].substr(0, cursorX));
+		float cursorPos = horizontalPadding - .5 + fontRef->stringWidth(lines[cursorY].substr(0, cursorX));
 
-		int cursorTop = verticalPadding + fontRef->getLineHeight()*cursorY;
-		int cursorBottom = cursorTop + fontRef->getLineHeight();
+		float cursorTop = verticalPadding + 3 + fontRef->getLineHeight()*cursorY;
+		float cursorBottom = cursorTop + fontRef->getLineHeight();
 
-		ofSetLineWidth(1.0f);
+		ofSetLineWidth(1.5f);
 		//TODO: multiline with fontRef
 		ofLine(cursorPos, cursorTop,
 			cursorPos, cursorBottom);
@@ -223,7 +223,7 @@ void ofxTextInputField::draw() {
 }
 
 //----------
-void ofxTextInputField::clear(){
+void ofxTextInputField::clear() {
 	text.clear();
 	cursorPosition = 0;
 	this->notifyTextChange();
@@ -235,6 +235,9 @@ void ofxTextInputField::keyPressed(ofKeyEventArgs& args) {
 	//jg: made a step closer to this with swappable renderers and ofxFTGL -- but need unicode text input...
 
 	//if we're not focused, then ignore the keypress
+
+	cout << args.key << ", " << args.keycode << endl;
+
 	if (!this->editing) {
 		return;
 	}
@@ -242,17 +245,21 @@ void ofxTextInputField::keyPressed(ofKeyEventArgs& args) {
 	lastTimeCursorMoved = ofGetElapsedTimef();
 	int key = args.key;
 
-	if (key == 4352) {
+#if defined(TARGET_WIN32)
+	if (args.key == 768) {
+#else
+	if (args.key == 4352) {
+#endif
 		this->commandHeld = true;
 	}
 
 #ifdef USE_GLFW_CLIPBOARD
-	if (key == 'c' && this->commandHeld) {
+	if (args.key == 'c' || args.keycode == 'C' && this->commandHeld) {
 		setClipboard(text.substr(selectionBegin, selectionEnd - selectionBegin));
 		return;
 	}
 
-	if (key == 'v' && this->commandHeld) {
+	if (args.key == 'v' || args.keycode == 'V' && this->commandHeld) {
 		text.insert(cursorPosition, getClipboard());
 		return;
 	}
@@ -270,12 +277,12 @@ void ofxTextInputField::keyPressed(ofKeyEventArgs& args) {
 	}
 
 	if (key == OF_KEY_RETURN) {
-		if(!multiline) {
+		if (!multiline) {
 			endEditing();
 			this->notifyHitReturn();
 			return;
 		}
-		text.insert(text.begin()+cursorPosition, '\n');
+		text.insert(text.begin() + cursorPosition, '\n');
 		cursorPosition++;
 
 		if (autoTab) {
@@ -355,32 +362,32 @@ void ofxTextInputField::keyPressed(ofKeyEventArgs& args) {
 		}
 	}
 
-	if (key == OF_KEY_LEFT){
+	if (key == OF_KEY_LEFT) {
 		if (selecting) {
 			cursorPosition = selectionBegin;
 			selecting = false;
 
 		}
 		else {
-			if (cursorPosition > 0){
+			if (cursorPosition > 0) {
 				--cursorPosition;
 			}
 		}
 	}
 
-	if (key == OF_KEY_RIGHT){
+	if (key == OF_KEY_RIGHT) {
 		if (selecting) {
 			cursorPosition = selectionEnd;
 			selecting = false;
 		}
 		else {
-			if (cursorPosition < text.size()){
+			if (cursorPosition < text.size()) {
 				++cursorPosition;
 			}
 		}
 	}
 
-	if (key == OF_KEY_UP){
+	if (key == OF_KEY_UP) {
 		if (selecting) {
 			cursorPosition = selectionBegin;
 			selecting = false;
@@ -405,7 +412,7 @@ void ofxTextInputField::keyPressed(ofKeyEventArgs& args) {
 		}
 	}
 
-	if (key == OF_KEY_DOWN){
+	if (key == OF_KEY_DOWN) {
 		if (selecting) {
 			cursorPosition = selectionEnd;
 			selecting = false;
@@ -430,16 +437,19 @@ void ofxTextInputField::keyPressed(ofKeyEventArgs& args) {
 }
 
 //----------
-void ofxTextInputField::keyReleased(ofKeyEventArgs &a){
+void ofxTextInputField::keyReleased(ofKeyEventArgs &a) {
 	//if we're not focused, then ignore the keypress
 	if (!this->editing) {
 		return;
 	}
-
+	cout << a.key << a.keycode << endl;
+#if defined(TARGET_WIN32)
+	if (a.key == 768) {
+#else
 	if (a.key == 4352) {
+#endif
 		this->commandHeld = false;
 	}
-
 }
 
 //----------
@@ -510,13 +520,50 @@ float ofxTextInputField::getHorizontalPadding() const {
 #endif
 
 //----------
-void ofxTextInputField::setClipboard(string clippy){
+void ofxTextInputField::setClipboard(string clippy) {
+#if defined(TARGET_LINUX) && !defined(TARGET_RASPBERRY_PI)
+	glfwSetClipboardString((GLFWwindow*)ofGetWindowPtr()->getX11Window(), clippy.c_str());
+#endif
+
+#if defined(TARGET_LINUX) && !defined(TARGET_OPENGLES)
+	glfwSetClipboardString((GLFWwindow*)ofGetWindowPtr()->getGLXContext(), clippy.c_str());
+#endif
+#if defined(TARGET_LINUX) && defined(TARGET_OPENGLES)
+	glfwSetClipboardString((GLFWwindow*)ofGetWindowPtr()->getEGLContext(), clippy.c_str());
+#endif
+
+#if defined(TARGET_OSX)
 	glfwSetClipboardString((GLFWwindow*)ofGetWindowPtr()->getCocoaWindow(), clippy.c_str());
+#endif
+
+#if defined(TARGET_WIN32)
+	//this method doesnt work
+	glfwSetClipboardString((GLFWwindow*)ofGetWindowPtr(), clippy.c_str());
+#endif
+
 }
 
 //----------
-string ofxTextInputField::getClipboard(){
+string ofxTextInputField::getClipboard() {
+#if defined(TARGET_LINUX) && !defined(TARGET_RASPBERRY_PI)
+	const char *clip = glfwGetClipboardString((GLFWwindow*)ofGetWindowPtr()->getX11Window());
+#endif
+
+#if defined(TARGET_LINUX) && !defined(TARGET_OPENGLES)
+	const char *clip = glfwGetClipboardString((GLFWwindow*)ofGetWindowPtr()->getGLXContext());
+#endif
+#if defined(TARGET_LINUX) && defined(TARGET_OPENGLES)
+	const char *clip = glfwGetClipboardString((GLFWwindow*)ofGetWindowPtr()->getEGLContext());
+#endif
+
+#if defined(TARGET_OSX)
 	const char *clip = glfwGetClipboardString((GLFWwindow*)ofGetWindowPtr()->getCocoaWindow());
+#endif
+
+#if defined(TARGET_WIN32)
+	//this works
+	const char *clip = glfwGetClipboardString((GLFWwindow*)ofGetWindowPtr()->getWin32Window());
+#endif
 	if (clip != NULL) {
 		return string(clip);
 	}
