@@ -21,17 +21,16 @@
 #define TEXTFIELD_IS_ACTIVE "textfieldIsActive"
 #define TEXTFIELD_IS_INACTIVE "textfieldIsInactive"
 
-#define USE_GLFW_CLIPBOARD
-
 #include "ofxUIFontRenderer.h"
+#include "ofxClipboard.h"
 
 class ofxTextInputField {
-  public:
+public:
 	ofxTextInputField();
 	virtual ~ofxTextInputField();
 
 	/// Always call this first
-    void setup(bool enableListeners = true);
+	void setup(bool enableListeners = true);
 
 	/// Change the font used to draw the text
 	void setFont(OFX_TEXTFIELD_FONT_RENDERER & font);
@@ -39,8 +38,8 @@ class ofxTextInputField {
 
 	void enable();
 	void disable();
-    bool isEnabled() const;
-	
+	bool isEnabled() const;
+
 	/// Whether the text box is focused and capturing keys
 	void beginEditing();
 	void endEditing();
@@ -55,64 +54,92 @@ class ofxTextInputField {
 	/// Clear text
 	void clear();
 
-    //can be set manually or otherwise is controlled by enable/disable
-    bool drawCursor;
-	
-	string text;
-
-	ofRectangle bounds;
-	int cursorPosition;
-	int selectionBegin;
-	int selectionEnd;
-	bool selecting;
-	
-	ofEvent<string> onTextChange;
-	ofEvent<string> onHitReturn;
-
-	void keyPressed(ofKeyEventArgs &a);
-    void keyReleased(ofKeyEventArgs &a);
-	void mousePressed(ofMouseEventArgs& args);
-	void mouseDragged(ofMouseEventArgs& args);
-	void mouseReleased(ofMouseEventArgs& args);
-
 	bool getCMDHeld() { return commandHeld; }
 
-	bool autoClear;
-	bool autoTab;
-	
-	bool multiline;
-    
-	float getVerticalPadding() const;
-	float getHorizontalPadding() const;
-
-	#ifdef USE_GLFW_CLIPBOARD
-    void setClipboard(string clippy);
-    string getClipboard();
-	#endif
-	
-  protected:
-	float lastTimeCursorMoved;
-	
-	float verticalPadding;
-	float horizontalPadding;
-
-	ofxUIUtils::FontRenderer* fontRef;
-	
-    bool enabled;
-	bool editing;
-	bool useListeners;
-
-	bool mouseDownInRect;
-	
-	void notifyTextChange();
-	void notifyHitReturn();
 	void getCursorCoords(int pos, int &cursorX, int &cursorY);
-	int getCursorPositionFromMouse(int x, int y);
-    
+
 	void addListeners();
 	void removeListeners();
 	bool hasListeners;
 
-    bool shiftHeld, commandHeld;
-    map<int, char> shiftMap;
+
+	float getVerticalPadding() const;
+	float getHorizontalPadding() const;
+
+	void setBounds(int x, int y, int width, int height) { bounds.set(x, y, width, height); }
+	void setBounds(ofRectangle r) { bounds.set(r); }
+	void setBounds(ofPoint p, int width, int height) { bounds.set(p, width, height); }
+	ofRectangle getBounds() { return bounds; }
+
+	void setText(string text) { this->text = text; renderString(); }
+	string getText() { return text; }
+
+	void setMultiline(bool multiline) { this->multiline = multiline; }
+	bool isMultiline() { return multiline; }
+
+	void setBackgroundColor(ofColor c) { bgColor = c; }
+	void setFontColor(ofColor c) { fontColor = c; }
+	ofColor setBackgroundColor() { return bgColor; }
+	ofColor setFontColor() { return fontColor; }
+
+private:
+
+	int getCursorPositionFromMouse(int x, int y);
+	int getTextPositionFromMouse(int x, int y);
+
+	ofColor bgColor, fontColor;
+
+	bool autoClear;
+
+	bool multiline;
+
+	bool drawCursor;
+
+	string text;
+
+	ofRectangle bounds;
+	int cursorPosition;
+	int textPos;
+	int selectionBegin;
+	int selectionEnd;
+	bool selecting;
+
+	ofEvent<string> onTextChange;
+	ofEvent<string> onHitReturn;
+
+	void keyPressed(ofKeyEventArgs &a);
+	void keyReleased(ofKeyEventArgs &a);
+	void mousePressed(ofMouseEventArgs& args);
+	void mouseDragged(ofMouseEventArgs& args);
+	void mouseReleased(ofMouseEventArgs& args);
+
+	float lastTimeCursorMoved;
+
+	float verticalPadding;
+	float horizontalPadding;
+
+	ofxUIUtils::FontRenderer* fontRef;
+
+	bool enabled;
+	bool editing;
+	bool useListeners;
+
+	bool mouseDownInRect;
+
+	void notifyTextChange();
+	void notifyHitReturn();
+
+	bool shiftHeld, commandHeld;
+	map<int, char> shiftMap;
+
+	ofxClipboard clipboard;
+	void renderString();
+
+	struct word {
+		string text;
+		ofRectangle rect;
+	};
+	vector< word > mWords;
+	vector<string> mLines;
+	//vector< vector<string> > mLines;
 };

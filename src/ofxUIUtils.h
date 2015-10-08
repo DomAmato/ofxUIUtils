@@ -5,3 +5,4 @@
 #include "ofxTextInputField.h"
 #include "ofxDropDownMenu.h"
 #include "ofxUIButton.h"
+#include "ofxUISlider.h"

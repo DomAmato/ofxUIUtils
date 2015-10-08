@@ -38,7 +38,7 @@ namespace ofxUIUtils {
 		virtual void drawString(string text, int x, int y) = 0;
 		virtual float getLineHeight() = 0;
 		virtual float stringWidth(const string &str) = 0;
-		
+		virtual OFX_TEXTFIELD_FONT_RENDERER * getRenderer() = 0;
 		
 		virtual bool isBitmapFont() { return false; }
 		
@@ -76,6 +76,9 @@ namespace ofxUIUtils {
 			return renderer->getLineHeight();
 		}
 		
+		OFX_TEXTFIELD_FONT_RENDERER * getRenderer() {
+			return this->renderer;
+		}
 		
 		float spacesWidth(const string &str) {
 			if(str.size()>0 && str[str.size()-1]==' ') {
@@ -101,13 +104,10 @@ namespace ofxUIUtils {
 		float getLineHeight() {
 			return 8.f*1.725f;
 		}
-		
-		
-		
-		
-		
-		
-		
+		OFX_TEXTFIELD_FONT_RENDERER * getRenderer() {
+			return nullptr;
+		}
+
 		float stringWidth(const string &str) {
 			int w = 0;
 			for(int i = 0; i < str.size(); i++) {
