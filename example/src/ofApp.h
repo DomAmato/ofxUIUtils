@@ -38,4 +38,10 @@ class ofApp : public ofBaseApp{
 		//	Text Fields 
 		ofxTextInputField monoLineTextInput, multilineTextInput;
 		ofTrueTypeFont font;
+
+		//Sliders
+		ofxUIIntSlider iSlider;
+		ofxUISlider<unsigned int> uiSlider;
+		ofxUIFloatSlider fSlider;
+		void sliderMoved(const int & sliderID);
 };

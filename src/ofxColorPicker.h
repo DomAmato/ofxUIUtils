@@ -38,9 +38,12 @@ public:
 	ofImage		colorPicker;
 
 	void mouseReleased(ofMouseEventArgs & args);
-	void mouseMoved(ofMouseEventArgs & args);
-	void mousePressed(ofMouseEventArgs & args);
+	void mouseMoved(ofMouseEventArgs & args) {}
+	void mousePressed(ofMouseEventArgs & args) {}
 	void mouseDragged(ofMouseEventArgs & args);
+	void mouseScrolled(ofMouseEventArgs & args) {}
+	void mouseEntered(ofMouseEventArgs & args) {}
+	void mouseExited(ofMouseEventArgs & args) {}
 
 	ofEvent<const ofColor> pickerEvent;
 

@@ -9,132 +9,124 @@
 
 //----------
 ofxTextInputField::ofxTextInputField() {
+	placeholderText = "";
 	text = "";
+
+	placeholderColor = ofColor::darkGray;
+	textColor = ofColor::black;
+	selectionColor.setHex(0x6988db);
+	boundsColor = ofColor::gray;
+	bgColor = ofColor::white;
+
 	multiline = false;
 	cursorPosition = 0;
 	selectionBegin = 0;
 	selectionEnd = 0;
-	textPos = 0;
 	selecting = false;
 
+	commandHeld = false;
+	shiftHeld = false;
+
 	fontRef = NULL;
-	this->enabled = false;
-	this->editing = false;
-	this->useListeners = false;
-	this->hasListeners = false;
+	bEnabled = false;
+	bEditing = false;
 	bounds = ofRectangle(0, 0, 100, 22);
 
 	drawCursor = false;
+	drawBounds = true;
 	autoClear = false;
 	mouseDownInRect = false;
 
 	fontRef = new ofxUIUtils::BitmapFontRenderer();
 
 	verticalPadding = 3;
-	horizontalPadding = 3;
+	capsVerticalOffset = 0;
+	horizontalPadding = 10;
 	lastTimeCursorMoved = ofGetElapsedTimef();
-	commandHeld = false;
 
-	bgColor = ofColor::white;
-	fontColor = ofColor::black;
+	bIsPhoneNumber = false;
 }
 
-//----------
-ofxTextInputField::~ofxTextInputField() {
-	this->removeListeners();
-}
-
-//----------
-void ofxTextInputField::setup(bool enableListeners) {
+void ofxTextInputField::setup() {
 	enable();
-	this->setUseListeners(enableListeners);
 }
 
-//----------
+
+void ofxTextInputField::enable() {
+	if (!bEnabled) {
+		ofAddListener(ofEvents().mousePressed, this, &ofxTextInputField::mousePressed);
+		ofAddListener(ofEvents().mouseDragged, this, &ofxTextInputField::mouseDragged);
+		ofAddListener(ofEvents().mouseReleased, this, &ofxTextInputField::mouseReleased);
+		bEnabled = true;
+	}
+}
+
+void ofxTextInputField::disable() {
+	if (bEditing) {
+		endEditing();
+	}
+	if (bEnabled) {
+		ofRemoveListener(ofEvents().mousePressed, this, &ofxTextInputField::mousePressed);
+		ofRemoveListener(ofEvents().mouseDragged, this, &ofxTextInputField::mouseDragged);
+		ofRemoveListener(ofEvents().mouseReleased, this, &ofxTextInputField::mouseReleased);
+		bEnabled = false;
+	}
+
+}
+void ofxTextInputField::beginEditing() {
+	if (!bEditing) {
+		ofAddListener(ofEvents().keyPressed, this, &ofxTextInputField::keyPressed);
+		ofAddListener(ofEvents().keyReleased, this, &ofxTextInputField::keyReleased);
+		ofNotifyEvent(editingBegan, this);
+		bEditing = true;
+		drawCursor = true;
+		if (autoClear) {
+			clear();
+		}
+		else {
+
+
+		}
+	}
+}
+
+void ofxTextInputField::endEditing() {
+	if (bEditing) {
+		ofRemoveListener(ofEvents().keyPressed, this, &ofxTextInputField::keyPressed);
+		ofRemoveListener(ofEvents().keyReleased, this, &ofxTextInputField::keyReleased);
+		ofNotifyEvent(editingEnded, this);
+		bEditing = false;
+		drawCursor = false;
+	}
+}
+
 void ofxTextInputField::setFont(OFX_TEXTFIELD_FONT_RENDERER & font) {
 	if (fontRef->isBitmapFont()) {
 		delete fontRef;
 	}
 	fontRef = new ofxUIUtils::TypedFontRenderer(&font);
-	renderString();
 }
 
-//----------
 ofxUIUtils::FontRenderer * ofxTextInputField::getFontRenderer() {
 	return this->fontRef;
 }
 
-//----------
-void ofxTextInputField::enable() {
-	if (!this->enabled) {
-		this->enabled = true;
-	}
+void ofxTextInputField::setHorizontalPadding(int val) {
+	horizontalPadding = val;
 }
 
-//----------
-void ofxTextInputField::disable() {
-	if (this->editing) {
-		endEditing();
-	}
-	if (this->enabled) {
-		this->enabled = false;
-	}
-
+void ofxTextInputField::setVerticalPadding(int val) {
+	verticalPadding = val;
 }
 
-//----------
-bool ofxTextInputField::isEnabled() const {
-	return this->enabled;
-}
-
-//----------
-void ofxTextInputField::beginEditing() {
-	if (!this->editing) {
-		ofSendMessage(TEXTFIELD_IS_ACTIVE);
-		this->editing = true;
-		drawCursor = true;
-		if (autoClear) {
-			clear();
-		}
-	}
-}
-
-//----------
-void ofxTextInputField::endEditing() {
-	if (this->editing) {
-		ofSendMessage(TEXTFIELD_IS_INACTIVE);
-		this->editing = false;
-		this->drawCursor = false;
-		this->commandHeld = false;
-	}
-}
-
-//----------
-bool ofxTextInputField::isEditing() const {
-	return this->editing;
-}
-
-//----------
-void ofxTextInputField::setUseListeners(bool useListeners) {
-	if (useListeners) {
-		this->addListeners();
-	}
-	else {
-		this->removeListeners();
-	}
-}
-
-//----------
-bool ofxTextInputField::getUseListeners() const {
-	return this->useListeners;
+void ofxTextInputField::setCapsVerticalOffset(int val) {
+	capsVerticalOffset = val;
 }
 
 //----------
 void ofxTextInputField::draw() {
-	ofPushMatrix();
-	{
-		ofPushStyle();
-		{
+	if (drawBounds) {
+		ofPushStyle(); {
 			ofSetColor(bgColor);
 			ofRect(bounds);
 			ofPushStyle();
@@ -146,379 +138,121 @@ void ofxTextInputField::draw() {
 
 			}
 			ofPopStyle();
-			ofTranslate(bounds.x, bounds.y);
+		}
+		ofPopStyle();
+	}
+	float slineHeight = fontRef->isBitmapFont() ? fontRef->getLineHeight() + 2 : fontRef->getRenderer()->getGlyphBBox().height;
+	float lineHeight = fontRef->getLineHeight();
 
-			if (selecting) {
-				ofPushStyle();
-				{
-					int beginCursorX, beginCursorY;
-					int endCursorX, endCursorY;
-					getCursorCoords(selectionBegin, beginCursorX, beginCursorY);
-					getCursorCoords(selectionEnd, endCursorX, endCursorY);
+	ofPushMatrix(); {
+		ofTranslate(bounds.x, bounds.y);
+		if (selecting) {
+			ofPushStyle(); {
+				vector<string> lines = ofSplitString(text, "\n");
+				int beginCursorX, beginCursorY;
+				int endCursorX, endCursorY;
+				getCursorCoords(selectionBegin, beginCursorX, beginCursorY);
+				getCursorCoords(selectionEnd, endCursorX, endCursorY);
 
-					float startX = fontRef->stringWidth(mLines[beginCursorY].substr(0, beginCursorX));
-					float endX = fontRef->stringWidth(mLines[endCursorY].substr(0, endCursorX));
+				float startX = beginCursorX > 0 ? fontRef->stringWidth(lines[beginCursorY].substr(0, beginCursorX)) : 0;
+				float endX = fontRef->stringWidth(lines[endCursorY].substr(0, endCursorX));
 
-					ofSetHexColor(0x6988db);
-					ofFill();
+				ofSetColor(selectionColor);
+				ofFill();
 
-					if (beginCursorY == endCursorY) {
-						// single line selection
-						ofRect(horizontalPadding + startX, verticalPadding + fontRef->getLineHeight()*beginCursorY,
-							endX - startX, fontRef->getLineHeight());
-					}
-					else {
-
-						// multiline selection.
-						// do first line to the end
-						ofRect(horizontalPadding + startX, verticalPadding + 3 + fontRef->getLineHeight()*beginCursorY,
-							fontRef->stringWidth(mLines[beginCursorY]) - startX,
-							fontRef->getLineHeight()
-							);
-
-						// loop through entirely selected lines
-						for (int i = beginCursorY + 1; i < endCursorY; i++) {
-							ofRect(horizontalPadding, verticalPadding + 3 + fontRef->getLineHeight()*i,
-								fontRef->stringWidth(mLines[i]),
-								fontRef->getLineHeight()
-								);
-						}
-						// do last line up to endX
-						ofRect(horizontalPadding, verticalPadding + fontRef->getLineHeight()*endCursorY,
-							endX, fontRef->getLineHeight()
-							);
-					}
+				if (beginCursorY == endCursorY) {
+					// single line selection
+					ofRect(horizontalPadding + startX - 2, verticalPadding + lineHeight*beginCursorY,
+						endX - startX + 4, slineHeight);
 				}
-				ofPopStyle();
-				//draw cursor line
+				else {
+
+					// multiline selection.
+					// do first line to the end
+					ofRect(horizontalPadding + startX - 2, verticalPadding + lineHeight*beginCursorY,
+						fontRef->stringWidth(lines[beginCursorY]) - startX + 4, slineHeight);
+
+					// loop through entirely selected lines
+					for (int i = beginCursorY + 1; i < endCursorY; i++) {
+						ofRect(horizontalPadding - 2, verticalPadding + lineHeight*i,
+							fontRef->stringWidth(lines[i]) + 4, slineHeight);
+					}
+					// do last line up to endX
+					ofRect(horizontalPadding - 2, verticalPadding + lineHeight*endCursorY,
+						endX + 4, slineHeight);
+				}
 			}
-			else if (drawCursor) {
-				ofPushMatrix();
-				ofPushStyle();
+			ofPopStyle();
+
+		}
+		//draw cursor line
+		else if (drawCursor) {
+			ofPushStyle();
+			{
 				// cursor should only blink when its been idle, and animation
 				// should be a clipped sine wave
-				float timeFrac = 0.5 * ofClamp(cos(6.0f * (ofGetElapsedTimef() - lastTimeCursorMoved)) * 4, -1, 1) + 0.5;
+				int timeFrac = 0.5 * ofClamp(cos(6.0f * (ofGetElapsedTimef() - lastTimeCursorMoved)) * 4, -1, 1) + 0.5;
+				//either its on or its off...
 
-				ofColor col = ofGetStyle().color;
-				ofSetColor(col.r * timeFrac, col.g * timeFrac, col.b * timeFrac);
+				timeFrac ? ofSetColor(textColor) : ofSetColor(bgColor);
+
+
+				// argh, splitting all the time.
+				vector<string> lines = ofSplitString(text, "\n");
 
 				// calculate this every loop.
 				int cursorX, cursorY;
 				getCursorCoords(cursorPosition, cursorX, cursorY);
-				float cursorPos = horizontalPadding - .5 + fontRef->stringWidth(mLines[cursorY].substr(0, cursorX));
 
-				float cursorTop = verticalPadding + 3 + fontRef->getLineHeight()*cursorY;
-				float cursorBottom = cursorTop + fontRef->getLineHeight();
+				float textWidth = 0;
+				if (text.length() > 0) {
+					textWidth = fontRef->stringWidth(text);
+				}
+				float cursorPos = horizontalPadding + (fontRef->stringWidth(lines[cursorY].substr(0, cursorX)) > 0 ? fontRef->stringWidth(lines[cursorY].substr(0, cursorX)) : 0);
 
-				ofSetLineWidth(1.5f);
-				//TODO: multiline with fontRef
+				if (cursorPos < 0) {
+					cursorPos = 0;
+				}
+
+				int cursorTop = verticalPadding + lineHeight*cursorY + abs(lineHeight - slineHeight);
+				int cursorBottom = cursorTop + lineHeight;
+
+				ofSetLineWidth(1.0f);
 				ofLine(cursorPos, cursorTop, cursorPos, cursorBottom);
-				ofPopStyle();
-				ofPopMatrix();
 			}
-
-			for (int i = 0; i < mLines.size(); i++) {
-				ofSetColor(fontColor);
-				fontRef->drawString(mLines[i], horizontalPadding, fontRef->getLineHeight() + fontRef->getLineHeight()*i + verticalPadding);
-			}
+			ofPopStyle();
 		}
-		ofPopStyle();
+		else if (placeholderText != "" && text == "") {
+			ofSetColor(placeholderColor);
+			fontRef->drawString(placeholderText, horizontalPadding, lineHeight + verticalPadding);
+		}
+
+		ofSetColor(textColor);
+		fontRef->drawString(text, horizontalPadding, lineHeight + verticalPadding + capsVerticalOffset);
 	}
 	ofPopMatrix();
 }
 
-//----------
 void ofxTextInputField::clear() {
 	text.clear();
 	cursorPosition = 0;
-	this->notifyTextChange();
 }
 
-//----------
-void ofxTextInputField::keyPressed(ofKeyEventArgs& args) {
-	if (!this->editing) {
-		return;
-	}
-
-	lastTimeCursorMoved = ofGetElapsedTimef();
-	int key = args.key;
-
-#if defined(TARGET_WIN32)
-	if (args.key == OF_KEY_CONTROL) {
-#else
-	if (args.key == OF_KEY_COMMAND) {
-#endif
-		this->commandHeld = true;
-	}
-
-	if (args.key == 'c' || args.keycode == 'C' && this->commandHeld) {
-		clipboard.setString(text.substr(selectionBegin, selectionEnd - selectionBegin));
-		return;
-	}
-
-	if (args.key == 'v' || args.keycode == 'V' && this->commandHeld) {
-		text.insert(textPos, clipboard.getString());
-		return;
-	}
-
-	if ((key >= 32 && key <= 126) || key == '\t' || key == OF_KEY_RETURN) {
-		if (selecting) {
-			text.erase(text.begin() + selectionBegin,
-				text.begin() + selectionEnd
-				);
-			cursorPosition = selectionBegin;
-			selecting = false;
-			this->notifyTextChange();
-		}
-	}
-
-	if (key == OF_KEY_RETURN) {
-		if (!multiline) {
-			endEditing();
-			this->notifyHitReturn();
-			return;
-		}
-		text.insert(text.begin() + textPos++, '\n');
-		cursorPosition++;
-		this->notifyTextChange();
-		return;
-	}
-
-	if ((key >= 32 && key <= 126) || key == '\t') {
-		text.insert(text.begin() + textPos++, key);
-		cursorPosition++;
-		this->notifyTextChange();
-	}
-
-	if (key == OF_KEY_BACKSPACE) {
-		if (selecting) {
-			text.erase(text.begin() + selectionBegin,
-				text.begin() + selectionEnd
-				);
-			cursorPosition = selectionBegin;
-			selecting = false;
-			this->notifyTextChange();
-		}
-		else {
-			if (textPos > 0) {
-				text.erase(text.begin() + textPos - 1);
-				--cursorPosition;
-				--textPos;
-				this->notifyTextChange();
-			}
-		}
-	}
-
-	if (key == OF_KEY_DEL) {
-		if (selecting) {
-			text.erase(text.begin() + selectionBegin,
-				text.begin() + selectionEnd
-				);
-			cursorPosition = selectionBegin;
-			textPos = selectionBegin;
-			selecting = false;
-			this->notifyTextChange();
-		}
-		else {
-			if (text.size() > textPos) {
-				text.erase(text.begin() + textPos);
-				this->notifyTextChange();
-			}
-		}
-	}
-
-	if (key == OF_KEY_LEFT) {
-		if (selecting) {
-			cursorPosition = selectionBegin;
-			textPos = selectionBegin;
-			selecting = false;
-
-		}
-		else {
-			if (cursorPosition > 0) {
-				--textPos;
-				--cursorPosition;
-			}
-		}
-	}
-
-	if (key == OF_KEY_RIGHT) {
-		if (selecting) {
-			cursorPosition = selectionEnd;
-			textPos = selectionEnd;
-			selecting = false;
-		}
-		else {
-			if (cursorPosition < text.size()) {
-				++cursorPosition;
-				textPos++;
-			}
-		}
-	}
-
-	if (key == OF_KEY_UP) {
-		if (selecting) {
-			cursorPosition = selectionBegin;
-			textPos = selectionBegin;
-			selecting = false;
-
-		}
-		else if (this->multiline) {
-			if (cursorPosition > 0) {
-				int xx, yy;
-				getCursorCoords(cursorPosition, xx, yy);
-				if (yy > 0) {
-					yy--;
-					xx = MIN(mLines[yy].size() - 1, xx);
-					cursorPosition = xx;
-					for (int i = 0; i < yy; i++) cursorPosition += mLines[i].size() + 1;
-					vector<string> lines = ofSplitString(text, "\n");
-					xx = MIN(lines[yy].size() - 1, xx);
-					textPos = xx;
-					for (int i = 0; i < yy; i++) textPos += lines[i].size() + 1;
-				}
-				else {
-					cursorPosition = 0;
-					textPos = 0;
-				}
-			}
-		}
-	}
-
-	if (key == OF_KEY_DOWN) {
-		if (selecting) {
-			cursorPosition = selectionEnd;
-			textPos = selectionEnd;
-			selecting = false;
-		}
-		else if (this->multiline) {
-			int xx, yy;
-			getCursorCoords(cursorPosition, xx, yy);
-			yy++;
-			if (yy < mLines.size() - 1) {
-
-				xx = MIN(mLines[yy].size() - 1, xx);
-				cursorPosition = xx;
-				for (int i = 0; i < yy; i++) cursorPosition += mLines[i].size() + 1;
-			}
-			vector<string> lines = ofSplitString(text, "\n");
-			yy++;
-			if (yy < lines.size() - 1) {
-				xx = MIN(lines[yy].size() - 1, xx);
-				textPos = xx;
-				for (int i = 0; i < yy; i++) textPos += lines[i].size() + 1;
-			}
-			else {
-				cursorPosition = text.size() - 1;
-				textPos = text.size() - 1;
-			}
-		}
-	}
-	renderString();
-}
-
-//----------
-void ofxTextInputField::keyReleased(ofKeyEventArgs &a) {
-
-#if defined(TARGET_WIN32)
-	if (a.key == OF_KEY_CONTROL) {
-#else
-	if (a.key == OF_KEY_COMMAND) {
-#endif
-		this->commandHeld = false;
-	}
-	//if we're not focused, then ignore the keypress
-	if (!this->editing) {
-		return;
-	}
-}
-
-//----------
-void ofxTextInputField::mousePressed(ofMouseEventArgs& args) {
-	if (!this->enabled) {
-		return;
-	}
-
-	mouseDownInRect = bounds.inside(args.x, args.y);
-	if (mouseDownInRect) {
-		cursorPosition = getCursorPositionFromMouse(args.x, args.y);
-		textPos = getTextPositionFromMouse(args.x, args.y);
-		lastTimeCursorMoved = ofGetElapsedTimef();
-		selecting = false;
-	}
-}
-
-//----------
-void ofxTextInputField::mouseDragged(ofMouseEventArgs& args) {
-	if (!this->enabled) {
-		return;
-	}
-
-	if (bounds.inside(args.x, args.y)) {
-		int pos = getCursorPositionFromMouse(args.x, args.y);
-		if (pos != cursorPosition) {
-			selecting = true;
-			selectionBegin = MIN(pos, cursorPosition);
-			selectionEnd = MAX(pos, cursorPosition);
-		}
-		else {
-			selecting = false;
-		}
-	}
-}
-
-//----------
-void ofxTextInputField::mouseReleased(ofMouseEventArgs& args) {
-	if (!this->enabled) {
-		return;
-	}
-
-	if (bounds.inside(args.x, args.y)) {
-		if (!this->editing && mouseDownInRect) {
-			beginEditing();
-		}
-	}
-	else {
-		endEditing();
-	}
-}
-
-//----------
-float ofxTextInputField::getVerticalPadding() const {
-	return this->verticalPadding;
-}
-
-//----------
-float ofxTextInputField::getHorizontalPadding() const {
-	return this->horizontalPadding;
-}
-
-
-//----------
-void ofxTextInputField::notifyTextChange() {
-	renderString();
-	ofNotifyEvent(this->onTextChange, this->text, this);
-}
-
-//----------
-void ofxTextInputField::notifyHitReturn() {
-	ofNotifyEvent(this->onHitReturn, this->text, this);
-}
-
-//----------
 void ofxTextInputField::getCursorCoords(int pos, int &cursorX, int &cursorY) {
+	vector<string> lines = ofSplitString(text, "\n");
+
 	int c = 0;
-	for (int i = 0; i < mLines.size(); i++) {
-		if (pos <= c + mLines[i].size()) {
+
+	for (int i = 0; i < lines.size(); i++) {
+		if (pos <= c + lines[i].size()) {
 			cursorY = i;
 			cursorX = pos - c;
 			return;
 		}
-		c += mLines[i].size() + 1;
+		c += lines[i].size() + 1;
 	}
 }
 
-//----------
 int ofxTextInputField::getCursorPositionFromMouse(int x, int y) {
 	int cursorX = 0;
 	int cursorY = 0;
@@ -527,30 +261,7 @@ int ofxTextInputField::getCursorPositionFromMouse(int x, int y) {
 	int line = pos;
 	cursorY = line;
 
-	if (cursorY >= mLines.size() - 1) cursorY = mLines.size() - 1;
-	if (mLines.size() > 0) {
-		cursorX = fontRef->getPosition(mLines[cursorY], x - horizontalPadding - bounds.x);
-	}
-	int c = 0;
-	for (int i = 0; i < cursorY; i++) {
-		c += mLines[i].size() + 1;
-	}
-	c += cursorX;
-	return c;
-}
-
-int ofxTextInputField::getTextPositionFromMouse(int x, int y) {
-	int cursorX = 0;
-	int cursorY = 0;
-	float pos = y - bounds.y - verticalPadding;
-	pos /= fontRef->getLineHeight();
-	int line = pos;
-	cursorY = line;
-
 	vector<string> lines = ofSplitString(text, "\n");
-	for (auto line : lines) {
-		ofStringReplace(line, "\n", "");
-	}
 	if (cursorY >= lines.size() - 1) cursorY = lines.size() - 1;
 	if (lines.size() > 0) {
 		cursorX = fontRef->getPosition(lines[cursorY], x - horizontalPadding - bounds.x);
@@ -560,118 +271,246 @@ int ofxTextInputField::getTextPositionFromMouse(int x, int y) {
 		c += lines[i].size() + 1;
 	}
 	c += cursorX;
-	//cout << "Text Position: " << c << endl;
 	return c;
 }
 
-//----------
-void ofxTextInputField::addListeners() {
-	if (this->hasListeners) {
-		return;
+
+void ofxTextInputField::mousePressed(ofMouseEventArgs& args) {
+	mouseDownInRect = bounds.inside(args.x, args.y);
+	if (mouseDownInRect) {
+		cursorPosition = getCursorPositionFromMouse(args.x, args.y);
+		lastTimeCursorMoved = ofGetElapsedTimef();
+		selecting = false;
 	}
-	ofAddListener(ofEvents().keyPressed, this, &ofxTextInputField::keyPressed);
-	ofAddListener(ofEvents().keyReleased, this, &ofxTextInputField::keyReleased);
-	ofAddListener(ofEvents().mousePressed, this, &ofxTextInputField::mousePressed);
-	ofAddListener(ofEvents().mouseDragged, this, &ofxTextInputField::mouseDragged);
-	ofAddListener(ofEvents().mouseReleased, this, &ofxTextInputField::mouseReleased);
 }
 
-//----------
-void ofxTextInputField::removeListeners() {
-	if (!this->hasListeners) {
-		return;
-	}
-	ofRemoveListener(ofEvents().keyPressed, this, &ofxTextInputField::keyPressed);
-	ofAddListener(ofEvents().keyReleased, this, &ofxTextInputField::keyReleased);
-	ofRemoveListener(ofEvents().mousePressed, this, &ofxTextInputField::mousePressed);
-	ofRemoveListener(ofEvents().mouseDragged, this, &ofxTextInputField::mouseDragged);
-	ofRemoveListener(ofEvents().mouseReleased, this, &ofxTextInputField::mouseReleased);
-}
 
-void ofxTextInputField::renderString()
-{
-	if (!fontRef->isBitmapFont()) {
-		mWords.clear();
-		int mLineHeight = 0;
-		string str = text;
-		bool newLine = str.find(" ") < str.find("\n") ? false : true;
-		bool space = str.find(" ") < str.find("\n") ? true : false;
-		//bool tab = 
-		// break paragraph into words //
-		int position = str.find(" ") < str.find("\n") ? str.find(" ") : str.find("\n");
+void ofxTextInputField::mouseDragged(ofMouseEventArgs& args) {
+	if (bounds.inside(args.x, args.y)) {
+		int pos = getCursorPositionFromMouse(args.x, args.y);
+		if (pos != cursorPosition) {
+			selecting = true;
+			selectionBegin = MIN(pos, cursorPosition);
+			selectionEnd = MAX(pos, cursorPosition);
 
-		while (position != string::npos)
-		{
-			string s = str.substr(0, position);
-			if (newLine) {
-				s += "\n";
-			}
-			if (space) {
-				s += " ";
-			}
-			word w = { s, fontRef->getRenderer()->getStringBoundingBox(s, 0, 0) };
-			mWords.push_back(w);
-			str.erase(0, position + 1);
-			position = str.find(" ") < str.find("\n") ? str.find(" ") : str.find("\n");
-			newLine = str.find(" ") < str.find("\n") ? false : true;
-			space = str.find(" ") < str.find("\n") ? true : false;
-			if (w.rect.height > mLineHeight) mLineHeight = w.rect.height;
-		}
-		// append the last word //
-		word w = { str, fontRef->getRenderer()->getStringBoundingBox(str, 0, 0) };
-		mWords.push_back(w);
-		if (w.rect.height > mLineHeight) mLineHeight = w.rect.height;
-
-		// assign words to lines //
-		int y = 0;
-		int x = 0;
-		mLines.clear();
-		string line;
-
-		for (int i = 0; i < mWords.size(); i++) {
-			if (x + mWords[i].rect.width < bounds.width) {
-				mWords[i].rect.x = x;
-				mWords[i].rect.y = y;
-				x += mWords[i].rect.width + 6;
-				line.append(mWords[i].text);
-				if (ofStringTimesInString(mWords[i].text, "\n") > 0) {
-					y += mLineHeight + 16;
-					mWords[i].rect.x = 0;
-					mWords[i].rect.y = y;
-					x = 0;
-					ofStringReplace(line, "\n", "");
-					mLines.push_back(line);
-					line.clear();
-				}
-			}
-			else {
-				y += mLineHeight + 16;
-				mWords[i].rect.x = 0;
-				mWords[i].rect.y = y;
-				x = mWords[i].rect.width + 6;
-				ofStringReplace(line, "\n", "");
-				mLines.push_back(line);
-				line.clear();
-				line.append(mWords[i].text);
-			}
-		}
-		// append the last line //
-		mLines.push_back(line);
-		text.clear();
-		for (int i = 0; i < mLines.size(); i++) {
-			if (i < mLines.size() - 1)
-				text.append(mLines[i] + "\n");
-			else
-				text.append(mLines[i]);
-		}
-	}
-	else {
-		if (multiline) {
-			mLines = ofSplitString(text, "\n");
 		}
 		else {
-			mLines.push_back(text);
+			selecting = false;
+		}
+	}
+}
+
+void ofxTextInputField::mouseReleased(ofMouseEventArgs& args) {
+	if (bounds.inside(args.x, args.y)) {
+		if (!bEditing && mouseDownInRect) {
+			beginEditing();
+		}
+	}
+	else if (bEditing) {
+		endEditing();
+	}
+}
+
+
+
+void ofxTextInputField::keyPressed(ofKeyEventArgs & a)
+{
+	lastTimeCursorMoved = ofGetElapsedTimef();
+
+	if (a.key == OF_KEY_SHIFT || a.key == OF_KEY_LEFT_SHIFT || a.key == OF_KEY_RIGHT_SHIFT) {
+		shiftHeld = true;
+		return;
+	}
+
+#if defined(TARGET_WIN32)
+	if (a.key == OF_KEY_CONTROL || a.key == OF_KEY_LEFT_CONTROL || a.key == OF_KEY_RIGHT_CONTROL) {
+#else
+	if (a.key == OF_KEY_COMMAND) {
+#endif
+		commandHeld = true;
+		return;
+	}
+
+	if (a.key == 'a' || a.keycode == 'A' && commandHeld) {
+		selecting = true;
+		selectionBegin = 0;
+		selectionEnd = text.size();
+		return;
+	}
+
+	if (a.key == 'c' || a.keycode == 'C' && commandHeld) {
+		clipboard.setString(text.substr(selectionBegin, selectionEnd - selectionBegin));
+		return;
+	}
+
+	if (a.key == 'x' || a.keycode == 'X' && commandHeld) {
+		clipboard.setString(text.substr(selectionBegin, selectionEnd - selectionBegin));
+		text.erase(text.begin() + selectionBegin, text.begin() + selectionEnd);
+		selecting = false;
+		cursorPosition = selectionBegin;
+		return;
+	}
+
+	if (a.key == 'v' || a.keycode == 'V' && commandHeld) {
+		string paste = clipboard.getString();
+		if (!multiline)
+			ofStringReplace(paste, "\n", "");
+		text.insert(cursorPosition, paste);
+		return;
+	}
+
+	if ((a.key >= 32 && a.key <= 126) || a.key == '\t' || a.key == OF_KEY_RETURN) {
+		if (selecting) {
+			text.erase(text.begin() + selectionBegin, text.begin() + selectionEnd);
+			cursorPosition = selectionBegin;
+			selecting = false;
 		}
 	}
 
+
+	if (a.key == OF_KEY_RETURN) {
+		if (!multiline) {
+			endEditing();
+			return;
+		}
+		text.insert(text.begin() + cursorPosition, '\n');
+		cursorPosition++;
+
+
+		ofNotifyEvent(textChanged, text, this);
+		return;
+	}
+
+
+	if (a.key == OF_KEY_BACKSPACE) {
+		if (selecting) {
+			text.erase(text.begin() + selectionBegin, text.begin() + selectionEnd);
+			cursorPosition = selectionBegin;
+			selecting = false;
+		}
+		else {
+			if (cursorPosition > 0) {
+				text.erase(text.begin() + cursorPosition - 1);
+				--cursorPosition;
+			}
+		}
+
+		ofNotifyEvent(textChanged, text, this);
+		return;
+	}
+
+	if (a.key == OF_KEY_DEL) {
+		if (selecting) {
+			text.erase(text.begin() + selectionBegin, text.begin() + selectionEnd);
+			cursorPosition = selectionBegin;
+			selecting = false;
+		}
+		else {
+			if (text.size() > cursorPosition) {
+				text.erase(text.begin() + cursorPosition);
+			}
+		}
+
+		ofNotifyEvent(textChanged, text, this);
+		return;
+	}
+
+	if (a.key == OF_KEY_LEFT) {
+		if (selecting) {
+			cursorPosition = selectionBegin;
+			selecting = false;
+
+		}
+		else {
+			if (cursorPosition > 0) {
+				--cursorPosition;
+			}
+		}
+		return;
+	}
+	if (a.key == OF_KEY_RIGHT) {
+		if (selecting) {
+			cursorPosition = selectionEnd;
+			selecting = false;
+		}
+		else {
+			if (cursorPosition < text.size()) {
+				++cursorPosition;
+			}
+		}
+		return;
+	}
+	if (a.key == OF_KEY_UP) {
+		if (selecting) {
+			cursorPosition = selectionBegin;
+			selecting = false;
+
+		}
+		else {
+			if (cursorPosition > 0) {
+				int xx, yy;
+				getCursorCoords(cursorPosition, xx, yy);
+				if (yy > 0) {
+					yy--;
+					vector<string> lines = ofSplitString(text, "\n");
+					xx = MIN(lines[yy].size() - 1, xx);
+					cursorPosition = xx;
+					for (int i = 0; i < yy; i++) cursorPosition += lines[i].size() + 1;
+					printf("Cursor position: %d\n", cursorPosition);
+				}
+				else {
+					cursorPosition = 0;
+				}
+			}
+		}
+		return;
+	}
+	if (a.key == OF_KEY_DOWN) {
+		if (selecting) {
+			cursorPosition = selectionEnd;
+			selecting = false;
+		}
+		else {
+			int xx, yy;
+			getCursorCoords(cursorPosition, xx, yy);
+			vector<string> lines = ofSplitString(text, "\n");
+			yy++;
+			if (yy < lines.size() - 1) {
+
+				xx = MIN(lines[yy].size() - 1, xx);
+				cursorPosition = xx;
+				for (int i = 0; i < yy; i++) cursorPosition += lines[i].size() + 1;
+				printf("Cursor position: %d\n", cursorPosition);
+			}
+			else {
+				cursorPosition = text.size() - 1;
+			}
+		}
+		return;
+	}
+	text.insert(text.begin() + cursorPosition, a.key);
+	cursorPosition++;
+
+	if (bIsPhoneNumber) {
+		if (text.size() == 3 || text.size() == 7) {
+			text.insert(text.begin() + cursorPosition, 45);
+			cursorPosition++;
+		}
+	}
+	ofNotifyEvent(textChanged, text, this);
+	}
+
+void ofxTextInputField::keyReleased(ofKeyEventArgs & a)
+{
+#if defined(TARGET_OSX)
+	if (a.key == OF_KEY_COMMAND) {  // EZ: or 4532, test this on Mac
+#elif defined(TARGET_WIN32)
+	if (a.key == OF_KEY_CONTROL) {
+#endif
+		commandHeld = false;
+	}
+
+	if (a.key == OF_KEY_SHIFT) {
+		shiftHeld = false;
+	}
 }

@@ -114,7 +114,3 @@ void ofxImgButton::mousePressed(ofMouseEventArgs & args) {
 		ofNotifyEvent(imgButtonEvent, temp, this);
 	}
 }
-
-void ofxImgButton::mouseDragged(ofMouseEventArgs & args) {
-	//
-}

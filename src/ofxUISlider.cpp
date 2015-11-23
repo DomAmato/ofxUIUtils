@@ -8,11 +8,11 @@ ofxUISlider<T>::ofxUISlider() {
 	type = UI_SLIDER_BAR;
 	dir = UI_SLIDER_HORIZONTAL;
 	barWidth = 16;
+	ID = ofRandom(1000);
 }
 
 template<typename T>
 ofxUISlider<T>::~ofxUISlider() {
-	value.removeListener(this, &ofxUISlider::valueChanged);
 }
 
 template<typename T>
@@ -89,54 +89,26 @@ T ofxUISlider<T>::getMax() {
 }
 
 template<typename T>
-bool ofxUISlider<T>::mouseMoved(ofMouseEventArgs & args) {
-	if (sliderRect.inside(ofPoint(args.x, args.y))) {
-		return true;
-	}
-	else {
-		return false;
-	}
-}
-
-template<typename T>
-bool ofxUISlider<T>::mousePressed(ofMouseEventArgs & args) {
+void ofxUISlider<T>::mousePressed(ofMouseEventArgs & args) {
 	if (bUpdateOnReleaseOnly) {
 		value.disableEvents();
 	}
-	if (setValue(args.x, args.y)) {
-		return true;
-	}
-	else {
-		return false;
-	}
+	setValue(args.x, args.y);
 }
 
 template<typename T>
-bool ofxUISlider<T>::mouseDragged(ofMouseEventArgs & args) {
+void ofxUISlider<T>::mouseDragged(ofMouseEventArgs & args) {
 	if (!bUpdateOnReleaseOnly) {
-		if (setValue(args.x, args.y)) {
-			return true;
-		}
-		else {
-			return false;
-		}
+		setValue(args.x, args.y);
 	}
-	return false;
 }
 
 template<typename T>
-bool ofxUISlider<T>::mouseReleased(ofMouseEventArgs & args) {
+void ofxUISlider<T>::mouseReleased(ofMouseEventArgs & args) {
 	if (bUpdateOnReleaseOnly) {
 		value.enableEvents();
 	}
-	bool attended = setValue(args.x, args.y);
-
-	if (attended) {
-		return true;
-	}
-	else {
-		return false;
-	}
+	setValue(args.x, args.y);
 }
 
 template<typename T>
@@ -249,22 +221,14 @@ void ofxUISlider<T>::generateDraw() {
 }
 
 template<typename T>
-bool ofxUISlider<T>::setValue(float mx, float my) {
+void ofxUISlider<T>::setValue(float mx, float my) {
 	if (sliderRect.inside(mx, my)) {
 		if (dir == UI_SLIDER_HORIZONTAL)
 			value = ofMap(mx, sliderRect.x, sliderRect.x + sliderRect.width, value.getMin(), value.getMax(), true);
 		else if (dir == UI_SLIDER_VERTICAL)
 			value = ofMap(my, sliderRect.y, sliderRect.y + sliderRect.height, value.getMin(), value.getMax(), true);
-		return true;
+		ofNotifyEvent(sliderEvent, ID, this);
 	}
-	else {
-		return false;
-	}
-}
-
-template<typename T>
-ofAbstractParameter & ofxUISlider<T>::getParameter() {
-	return value;
 }
 
 template<typename T>

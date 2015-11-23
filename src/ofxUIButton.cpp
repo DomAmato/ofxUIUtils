@@ -117,6 +117,3 @@ void ofxUIButton::mousePressed(ofMouseEventArgs & args){
 	}
 }
 
-void ofxUIButton::mouseDragged(ofMouseEventArgs & args){
-	//
-}

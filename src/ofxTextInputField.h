@@ -7,6 +7,7 @@
 //  modified by Momo the Monster 7/10/2012
 //  swappable fonts added by James George 9/11/2012
 //	refactoring and modifications by Elliot Woods on 30/11/2014
+//  Other changes made by Dom Amato 11/22/2015
 //
 //	MIT license
 //	http://www.opensource.org/licenses/mit-license.php
@@ -18,128 +19,100 @@
 
 #include "ofMain.h"
 
-#define TEXTFIELD_IS_ACTIVE "textfieldIsActive"
-#define TEXTFIELD_IS_INACTIVE "textfieldIsInactive"
-
 #include "ofxUIFontRenderer.h"
 #include "ofxClipboard.h"
 
 class ofxTextInputField {
 public:
+
 	ofxTextInputField();
-	virtual ~ofxTextInputField();
 
-	/// Always call this first
-	void setup(bool enableListeners = true);
-
-	/// Change the font used to draw the text
-	void setFont(OFX_TEXTFIELD_FONT_RENDERER & font);
+	//swap in a font!
+	void setFont(OFX_TEXTFIELD_FONT_RENDERER& font);
 	ofxUIUtils::FontRenderer * getFontRenderer();
 
-	void enable();
-	void disable();
-	bool isEnabled() const;
+	void		setup();
 
-	/// Whether the text box is focused and capturing keys
-	void beginEditing();
-	void endEditing();
-	bool isEditing() const;
+	void		setHorizontalPadding(int val);
+	void		setVerticalPadding(int val);
+	void		setCapsVerticalOffset(int val);
+	float		getVerticalPadding() const { return verticalPadding; }
+	float		getHorizontalPadding() const { return horizontalPadding; }
 
-	void setUseListeners(bool);
-	bool getUseListeners() const;
+	void		enable();
+	void		disable();
+	bool		isEnabled() { return bEnabled; }
 
-	/// Draw inside this->bounds
-	void draw();
+	bool		isEditing() { return bEditing; }
 
-	/// Clear text
-	void clear();
+	void		setIsPhoneNumber(bool val) { bIsPhoneNumber = val; }
 
-	bool getCMDHeld() { return commandHeld; }
+	void		draw();
+	void		clear();
 
-	void getCursorCoords(int pos, int &cursorX, int &cursorY);
+	bool		isMultiline() { return multiline; }
+	void		setMultiline(bool state) { multiline = state; }
 
-	void addListeners();
-	void removeListeners();
-	bool hasListeners;
+	bool		doesDrawCursor() { return drawCursor; }
+	void		setDrawCursor(bool state) { drawCursor = state; }
 
+	bool		doesDrawBounds() { return drawBounds; }
+	void		setDrawBounds(bool state) { drawBounds = state; }
 
-	float getVerticalPadding() const;
-	float getHorizontalPadding() const;
-
-	void setBounds(int x, int y, int width, int height) { bounds.set(x, y, width, height); }
-	void setBounds(ofRectangle r) { bounds.set(r); }
-	void setBounds(ofPoint p, int width, int height) { bounds.set(p, width, height); }
 	ofRectangle getBounds() { return bounds; }
+	void		setBounds(int x, int y, int w, int h) { setBounds(ofRectangle(x, y, w, h)); }
+	void		setBounds(ofPoint p, int w, int h) { setBounds(ofRectangle(p, w, h)); }
+	void		setBounds(ofPoint p1, ofPoint p2) { setBounds(ofRectangle(p1, p2)); }
+	void		setBounds(ofRectangle r) { bounds = r; }
 
-	void setText(string text) { this->text = text; renderString(); }
-	string getText() { return text; }
+	void		setText(string s) { if(!multiline) ofStringReplace(text, "\n", ""); text = s; }
+	string		getText() { return text; }
 
-	void setMultiline(bool multiline) { this->multiline = multiline; }
-	bool isMultiline() { return multiline; }
+	void		setPlaceholderText(string s) { placeholderText = s; }
+	string		getPlaceholderText() { return placeholderText; }
 
-	void setBackgroundColor(ofColor c) { bgColor = c; }
-	void setFontColor(ofColor c) { fontColor = c; }
-	ofColor setBackgroundColor() { return bgColor; }
-	ofColor setFontColor() { return fontColor; }
+	void		setTextColor(ofColor c) { textColor = c; }
+	void		setPlaceholderTextColor(ofColor c) { placeholderColor = c; }
+	void		setTextSelectionColor(ofColor c) { selectionColor = c; }
+	void		setBoundsColor(ofColor c) { boundsColor = c; }
+	void		setBackgroundColor(ofColor c) { bgColor = c; }
 
-private:
+	ofColor		getTextColor() { return textColor; }
+	ofColor		getPlaceholderTextColor() { return placeholderColor; }
+	ofColor		getTextSelectionColor() { return selectionColor; }
+	ofColor		getBoundsColor() { return boundsColor; }
+	ofColor		getBackgroundColor() { return bgColor; }
 
-	int getCursorPositionFromMouse(int x, int y);
-	int getTextPositionFromMouse(int x, int y);
+	ofEvent<void> editingBegan;
+	ofEvent<void> editingEnded;
+	ofEvent<string> textChanged;
 
-	ofColor bgColor, fontColor;
-
-	bool autoClear;
-
-	bool multiline;
-
-	bool drawCursor;
-
-	string text;
+protected:
+	bool drawCursor, drawBounds, selecting, autoClear, multiline, bEnabled, 
+		bEditing, mouseDownInRect, shiftHeld, commandHeld, bIsPhoneNumber;
 
 	ofRectangle bounds;
-	int cursorPosition;
-	int textPos;
-	int selectionBegin;
-	int selectionEnd;
-	bool selecting;
 
-	ofEvent<string> onTextChange;
-	ofEvent<string> onHitReturn;
+	string text, placeholderText;
 
-	void keyPressed(ofKeyEventArgs &a);
-	void keyReleased(ofKeyEventArgs &a);
-	void mousePressed(ofMouseEventArgs& args);
-	void mouseDragged(ofMouseEventArgs& args);
-	void mouseReleased(ofMouseEventArgs& args);
+	ofColor textColor, placeholderColor, selectionColor, boundsColor, bgColor;
+
+	int cursorPosition, selectionBegin, selectionEnd, verticalPadding, capsVerticalOffset, horizontalPadding;
 
 	float lastTimeCursorMoved;
-
-	float verticalPadding;
-	float horizontalPadding;
-
+	
 	ofxUIUtils::FontRenderer* fontRef;
-
-	bool enabled;
-	bool editing;
-	bool useListeners;
-
-	bool mouseDownInRect;
-
-	void notifyTextChange();
-	void notifyHitReturn();
-
-	bool shiftHeld, commandHeld;
-	map<int, char> shiftMap;
-
 	ofxClipboard clipboard;
-	void renderString();
+	
+	void	keyPressed(ofKeyEventArgs & a);
+	void	keyReleased(ofKeyEventArgs & a);
+	void    mousePressed(ofMouseEventArgs& args);
+	void    mouseDragged(ofMouseEventArgs& args);
+	void    mouseReleased(ofMouseEventArgs& args);
 
-	struct word {
-		string text;
-		ofRectangle rect;
-	};
-	vector< word > mWords;
-	vector<string> mLines;
-	//vector< vector<string> > mLines;
+	void	getCursorCoords(int pos, int &cursorX, int &cursorY);
+	int		getCursorPositionFromMouse(int x, int y);
+
+	void		beginEditing();
+	void		endEditing();
 };

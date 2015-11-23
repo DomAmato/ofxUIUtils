@@ -236,7 +236,7 @@ void ofxColorPicker::setup(ColorPickerType type, float width, float height){
 		break;
 	}
 
-	colorPicker.reloadTexture();
+	colorPicker.update();// reloadTexture();
 
 
 	pickerRect.x = 0;
@@ -304,14 +304,6 @@ void ofxColorPicker::mouseReleased(ofMouseEventArgs & args){
 		float y = ofMap(args.y, pickerRect.y, pickerRect.y + pickerRect.height, 0, pickerRect.height);
 		ofNotifyEvent(pickerEvent, colorPicker.getColor(x, y), this);
 	}
-}
-
-void ofxColorPicker::mouseMoved(ofMouseEventArgs & args){
-	//
-}
-
-void ofxColorPicker::mousePressed(ofMouseEventArgs & args){
-	//
 }
 
 void ofxColorPicker::mouseDragged(ofMouseEventArgs & args){

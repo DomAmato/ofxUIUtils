@@ -38,15 +38,14 @@ namespace ofxUIUtils {
 		virtual void drawString(string text, int x, int y) = 0;
 		virtual float getLineHeight() = 0;
 		virtual float stringWidth(const string &str) = 0;
+		virtual float stringHeight(const string &str) = 0;
 		virtual OFX_TEXTFIELD_FONT_RENDERER * getRenderer() = 0;
 		
 		virtual bool isBitmapFont() { return false; }
 		
-		
 		// this gets the cursor position (in characters) based on an x coordinate.
 		int getPosition(const string &str, int x) {
 			float lastW = 0;
-			
 			for(int i = 0; i < str.size(); i++) {
 				
 				float w = this->stringWidth(str.substr(0, i+1));
@@ -90,6 +89,10 @@ namespace ofxUIUtils {
 			
 			return renderer->stringWidth(str) + spacesWidth(str) + 3;
 		}
+		float stringHeight(const string &str) {
+
+			return renderer->stringHeight(str);
+		}
 	};
 	
 
@@ -118,6 +121,9 @@ namespace ofxUIUtils {
 			}
 			return w*8;
 		}
-		
+		float stringHeight(const string &str) {
+
+			return getLineHeight();
+		}
 	};
 };

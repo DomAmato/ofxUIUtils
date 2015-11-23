@@ -1,6 +1,6 @@
 #include "ofxDropDownMenu.h"
 
-ofxDropDownMenu::ofxDropDownMenu(){
+ofxDropDownMenu::ofxDropDownMenu() {
 
 	ofRegisterMouseEvents(this);
 	ofRegisterKeyEvents(this);
@@ -8,24 +8,23 @@ ofxDropDownMenu::ofxDropDownMenu(){
 	selection = "-- Menu --";
 	mainPanel->setTitle(selection);
 	mainPanel->setToggleMode(true);
-    mainPanel->setPosition(0,0);
-    //evidently if this isn't set it can sometimes never be initialized?
-    mainPanel->setWidth(30);
+	mainPanel->setPosition(0, 0);
+	//evidently if this isn't set it can sometimes never be initialized?
+	mainPanel->setWidth(30);
 	toggled = false;
 	toggleTimer = 0;
 	IDs = 0;
-	_ID = 0;
 	_cellHeight = 25;
 	ofAddListener(mainPanel->buttonEvent, this, &ofxDropDownMenu::UIButPressed);
 }
 
-void ofxDropDownMenu::draw(){
+void ofxDropDownMenu::draw() {
 	ofPushStyle();
-    ofPushMatrix();
+	ofPushMatrix();
 	int x, y;
-    mainPanel->draw();
+	mainPanel->draw();
 
-	if (toggled){
+	if (toggled) {
 		ofPushMatrix();
 		ofTranslate(0, 0, 1);
 		x = menuPos.x;
@@ -37,7 +36,7 @@ void ofxDropDownMenu::draw(){
 		int color_forText = 0;
 
 		for (int i = 0; i < menuItems.size(); i++) {
-			if (menuItems[i].isActive()){
+			if (menuItems[i].isActive()) {
 				menuItems[i].setTextColor(ofColor::white);
 			}
 			else {
@@ -49,52 +48,57 @@ void ofxDropDownMenu::draw(){
 		ofTranslate(0, 0, -1);
 		ofPopMatrix();
 	}
-    ofPopMatrix();
+	ofPopMatrix();
 	ofPopStyle();
 }
 
-ofxDropDownMenu::~ofxDropDownMenu(){
+ofxDropDownMenu::~ofxDropDownMenu() {
 
 	ofUnregisterMouseEvents(this);
 	ofUnregisterKeyEvents(this);
 }
 
-void ofxDropDownMenu::addMenuItem(string name){
+void ofxDropDownMenu::addMenuItem(string name) {
 
 	ofxUIMenuItem temp;
 	temp.setTitle(name);
 	temp.setVisible(true);
 	temp.setID(IDs++);
 	menuItems.push_back(temp);
-	if (_width < ofBitmapStringGetBoundingBox(name, 0, 0).width)
-		_width = ofBitmapStringGetBoundingBox(name, 0, 0).width + 10;
+	ofBitmapFont bFont;
+	if (_width < bFont.getBoundingBox(name, 0, 0).width)
+		_width = bFont.getBoundingBox(name, 0, 0).width + 10;
 	_height = (_cellHeight * menuItems.size() + 5);
 }
 
-void ofxDropDownMenu::removeMenuItem(string name){
-	for (int i = 0; i < menuItems.size(); i++){
-		if (menuItems[i].getTitle() == name)
+void ofxDropDownMenu::removeMenuItem(string name) {
+	for (int i = 0; i < menuItems.size(); i++) {
+		if (menuItems[i].getTitle() == name) {
 			menuItems.erase(menuItems.begin() + i);
+			_height = (_cellHeight * menuItems.size() + 5);
+		}
 	}
 }
-void ofxDropDownMenu::removeMenuItem(int ID){
-	for (int i = 0; i < menuItems.size(); i++){
-		if (menuItems[i].getID() == ID)
+void ofxDropDownMenu::removeMenuItem(int ID) {
+	for (int i = 0; i < menuItems.size(); i++) {
+		if (menuItems[i].getID() == ID) {
 			menuItems.erase(menuItems.begin() + i);
+			_height = (_cellHeight * menuItems.size() + 5);
+		}
 	}
 }
-void ofxDropDownMenu::clearMenuItems(){
+void ofxDropDownMenu::clearMenuItems() {
 	menuItems.clear();
 }
 
-void ofxDropDownMenu::mouseReleased(ofMouseEventArgs& eventArgs){
+void ofxDropDownMenu::mouseReleased(ofMouseEventArgs& eventArgs) {
 
-	if (eventArgs.button == 0 && toggled){
+	if (eventArgs.button == 0 && toggled) {
 		for (int i = 0; i < menuItems.size(); i++) {
-			if (menuItems[i].isActive()){
+			if (menuItems[i].isActive()) {
 				toggleTimer = ofGetElapsedTimeMillis();
 				selection = menuItems[i].getTitle();
-				pair<string, int> temp(selection, _ID);
+				pair<string, int> temp(selection, menuItems[i].getID());
 				ofNotifyEvent(menuEvent, temp, this);
 			}
 		}
@@ -103,9 +107,9 @@ void ofxDropDownMenu::mouseReleased(ofMouseEventArgs& eventArgs){
 	}
 }
 
-void ofxDropDownMenu::UIButPressed(const pair<bool, int> & state){
+void ofxDropDownMenu::UIButPressed(const pair<bool, int> & state) {
 
-	if (state.first && !toggled && ofGetElapsedTimeMillis() - toggleTimer > 500){
+	if (state.first && !toggled && ofGetElapsedTimeMillis() - toggleTimer > 500) {
 		selection = mainPanel->getTitle();
 		toggled = true;
 		menuPos.x = ofGetMouseX();

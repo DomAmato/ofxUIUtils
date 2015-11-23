@@ -108,6 +108,10 @@ public:
 	void mouseMoved(ofMouseEventArgs & args){}
 	void mouseDragged(ofMouseEventArgs & args){}
 	void mousePressed(ofMouseEventArgs & args){}
+	void mouseScrolled(ofMouseEventArgs & args) {}
+	void mouseEntered(ofMouseEventArgs & args) {}
+	void mouseExited(ofMouseEventArgs & args) {}
+
 	void keyPressed(ofKeyEventArgs& eventArgs){ toggled = false; }
 	void keyReleased(ofKeyEventArgs& eventArgs) {}
 
@@ -120,6 +124,7 @@ public:
 	string getSelection() { return selection; }
 	bool getToggled() { return toggled; }
 	void setToggled(bool mode) { toggled = mode; mainPanel->setToggle(mode); }
+	int getID() { return _ID; }
 
 	ofEvent<const pair<string, int> > menuEvent;
 

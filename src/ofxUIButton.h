@@ -33,7 +33,7 @@ public:
 	void setToggleMode(bool mode) { togglable = mode; }
 	void setToggle(bool mode) { toggle = mode; }
 	void setButtonStyle(UI_Button_Style style) { buttonStyle = style; }
-	void setRadius(float r) {}
+	void setRadius(float r) { _r = r; }
 
 	void buttonAutoSizes(bool state) { _autoSize = state; }
 
@@ -44,9 +44,12 @@ public:
 	ofPoint getPosition() { return ofPoint(_x, _y); }
 
 	void mouseMoved(ofMouseEventArgs & args);
-	void mouseDragged(ofMouseEventArgs & args);
+	void mouseDragged(ofMouseEventArgs & args) {}
 	void mousePressed(ofMouseEventArgs & args);
 	void mouseReleased(ofMouseEventArgs& eventArgs);
+	void mouseScrolled(ofMouseEventArgs & args) {}
+	void mouseEntered(ofMouseEventArgs & args) {}
+	void mouseExited(ofMouseEventArgs & args) {}
 
 	ofEvent<const pair<bool, int> > buttonEvent;
 

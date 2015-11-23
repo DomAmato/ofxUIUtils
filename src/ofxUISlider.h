@@ -31,27 +31,22 @@ public:
 	void setMax(T max);
 	T getMax();
 
-	virtual bool mouseMoved(ofMouseEventArgs & args);
-	virtual bool mousePressed(ofMouseEventArgs & args);
-	virtual bool mouseDragged(ofMouseEventArgs & args);
-	virtual bool mouseReleased(ofMouseEventArgs & args);
+	void mouseMoved(ofMouseEventArgs & args) {}
+	void mousePressed(ofMouseEventArgs & args);
+	void mouseDragged(ofMouseEventArgs & args);
+	void mouseReleased(ofMouseEventArgs & args);
+	void mouseScrolled(ofMouseEventArgs & args) {}
+	void mouseEntered(ofMouseEventArgs & args) {}
+	void mouseExited(ofMouseEventArgs & args) {}
 
-	void setUpdateOnReleaseOnly(bool bUpdateOnReleaseOnly) { this->bUpdateOnReleaseOnly = bUpdateOnReleaseOnly; }
+	void setUpdateOnReleaseOnly(bool bUpdate) { this->bUpdateOnReleaseOnly = bUpdate; }
 
 	void setBackgroundColor(ofColor c) { this->bgc = c; generateDraw(); }
 	void setFillColor(ofColor c) { this->fgc = c; generateDraw(); }
 
 	void voidSetBarWidth(int width) { barWidth = width; generateDraw(); }
 
-	template<class ListenerClass, typename ListenerMethod>
-	void addListener(ListenerClass * listener, ListenerMethod method) {
-		value.addListener(listener, method);
-	}
-
-	template<class ListenerClass, typename ListenerMethod>
-	void removeListener(ListenerClass * listener, ListenerMethod method) {
-		value.removeListener(listener, method);
-	}
+	ofEvent<const int> sliderEvent;
 
 	void draw();
 	void draw(int x, int y);
@@ -60,9 +55,11 @@ public:
 	double operator=(T v);
 	operator const T & ();
 
+	void setID(int newId) { ID = newId; }
+	int getID() { return ID; }
 
-
-	ofAbstractParameter & getParameter();
+	void setValue(T newVal) { value = newVal; }
+	T getValue() { return value; }
 
 protected:
 	ofColor bgc, fgc;
@@ -70,12 +67,12 @@ protected:
 	ofxUISliderDirection dir;
 	ofParameter<T> value;
 	bool bUpdateOnReleaseOnly;
-	bool setValue(float mx, float my);
+	void setValue(float mx, float my);
 	void generateDraw();
 	void valueChanged(T & value);
 	ofPath bg, bar;
 	ofRectangle sliderRect;
-	int barWidth;
+	int barWidth, ID;
 };
 
 typedef ofxUISlider<float> ofxUIFloatSlider;
