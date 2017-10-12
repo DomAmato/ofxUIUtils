@@ -331,19 +331,19 @@ void ofxTextInputField::keyPressed(ofKeyEventArgs & a)
 		return;
 	}
 
-	if (a.key == 'a' || a.keycode == 'A' && commandHeld) {
+	if ((a.key == 'a' || a.keycode == 'A') && commandHeld) {
 		selecting = true;
 		selectionBegin = 0;
 		selectionEnd = text.size();
 		return;
 	}
 
-	if (a.key == 'c' || a.keycode == 'C' && commandHeld) {
+	if ((a.key == 'c' || a.keycode == 'C') && commandHeld) {
 		clipboard.setString(text.substr(selectionBegin, selectionEnd - selectionBegin));
 		return;
 	}
 
-	if (a.key == 'x' || a.keycode == 'X' && commandHeld) {
+	if ((a.key == 'x' || a.keycode == 'X') && commandHeld) {
 		clipboard.setString(text.substr(selectionBegin, selectionEnd - selectionBegin));
 		text.erase(text.begin() + selectionBegin, text.begin() + selectionEnd);
 		selecting = false;
@@ -351,7 +351,7 @@ void ofxTextInputField::keyPressed(ofKeyEventArgs & a)
 		return;
 	}
 
-	if (a.key == 'v' || a.keycode == 'V' && commandHeld) {
+	if ((a.key == 'v' || a.keycode == 'V') && commandHeld) {
 		string paste = clipboard.getString();
 		if (!multiline)
 			ofStringReplace(paste, "\n", "");
