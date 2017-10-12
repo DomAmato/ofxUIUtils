@@ -1,10 +1,11 @@
 #include "ofxColorPicker.h"
 
 ofxColorPicker::ofxColorPicker(){
+	visible = true;
 }
 
 ofxColorPicker::~ofxColorPicker(){
-	//
+
 }
 
 void ofxColorPicker::setup(ColorPickerType type, float width, float height){
@@ -173,8 +174,8 @@ void ofxColorPicker::setup(ColorPickerType type, float width, float height){
 				float hue = ofMap(dist, 0, h, 0, 255, true);
 
 				
-				if (x < h*.12){
-					bri = ofMap(dist, 0, w, 255, 0, true);
+				if (x < w*.12){
+					bri = ofMap(dist, 0, h, 255, 0, true);
 					sat = 0;
 				}
 				else {
@@ -266,7 +267,12 @@ void ofxColorPicker::draw(ofPoint p){
 	draw();
 }
 void ofxColorPicker::draw(){
-	colorPicker.draw(pickerRect.x, pickerRect.y, pickerRect.width, pickerRect.height);
+	if (visible) {
+		ofPushStyle(); {
+			ofSetColor(255);
+			colorPicker.draw(pickerRect.x, pickerRect.y, pickerRect.width, pickerRect.height);
+		} ofPopStyle();
+	}
 }
 
 void ofxColorPicker::setWidth(int w){
@@ -299,17 +305,25 @@ Mouse Funcitons
 */
 
 void ofxColorPicker::mouseReleased(ofMouseEventArgs & args){
-	if (pickerRect.inside(args.x, args.y)){
+	if (visible && pickerRect.inside(args.x, args.y)){
 		float x = ofMap(args.x, pickerRect.x, pickerRect.x + pickerRect.width, 0, pickerRect.width);
 		float y = ofMap(args.y, pickerRect.y, pickerRect.y + pickerRect.height, 0, pickerRect.height);
-		ofNotifyEvent(pickerEvent, colorPicker.getColor(x, y), this);
+		ofNotifyEvent(pickerPickEvent, colorPicker.getColor(x, y), this);
 	}
 }
 
 void ofxColorPicker::mouseDragged(ofMouseEventArgs & args){
-	if (pickerRect.inside(args.x, args.y)){
+	if (visible && pickerRect.inside(args.x, args.y)){
 		float x = ofMap(args.x, pickerRect.x, pickerRect.x + pickerRect.width, 0, pickerRect.width);
 		float y = ofMap(args.y, pickerRect.y, pickerRect.y + pickerRect.height, 0, pickerRect.height);
-		ofNotifyEvent(pickerEvent, colorPicker.getColor(x, y), this);
+		ofNotifyEvent(pickerMoveEvent, colorPicker.getColor(x, y), this);
+	}
+}
+
+void ofxColorPicker::mouseMoved(ofMouseEventArgs & args) {
+	if (visible && pickerRect.inside(args.x, args.y)) {
+		float x = ofMap(args.x, pickerRect.x, pickerRect.x + pickerRect.width, 0, pickerRect.width);
+		float y = ofMap(args.y, pickerRect.y, pickerRect.y + pickerRect.height, 0, pickerRect.height);
+		ofNotifyEvent(pickerMoveEvent, colorPicker.getColor(x, y), this);
 	}
 }

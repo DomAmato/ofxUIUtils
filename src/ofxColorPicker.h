@@ -32,19 +32,27 @@ public:
 	float getHeight();
 	void setPosition(int x, int y);
 	void setPosition(ofPoint p);
+	void setVisible(bool state) { visible = state; }
 
-	ColorPickerType pickerType;
-	ofRectangle pickerRect;
-	ofImage		colorPicker;
+	ofColor getColorAt(ofPoint p) { return getColorAt(p.x, p.y);  }
+	ofColor getColorAt(int x, int y) { return colorPicker.getColor(x, y); }
+
 
 	void mouseReleased(ofMouseEventArgs & args);
-	void mouseMoved(ofMouseEventArgs & args) {}
+	void mouseMoved(ofMouseEventArgs & args);
 	void mousePressed(ofMouseEventArgs & args) {}
 	void mouseDragged(ofMouseEventArgs & args);
 	void mouseScrolled(ofMouseEventArgs & args) {}
 	void mouseEntered(ofMouseEventArgs & args) {}
 	void mouseExited(ofMouseEventArgs & args) {}
 
-	ofEvent<const ofColor> pickerEvent;
+	ofEvent<const ofColor> pickerPickEvent;
+	ofEvent<const ofColor> pickerMoveEvent;
 
+private:
+	ColorPickerType pickerType;
+	ofRectangle pickerRect;
+	ofImage		colorPicker;
+
+	bool visible;
 };
