@@ -2,8 +2,9 @@
 
 #include "ofParameter.h"
 #include "ofMain.h"
+#include "ofxUIButton.h"
 
-class ofxImgButton{
+class ofxImgButton : public ofxUIButton {
 
 public:
 	ofxImgButton();
@@ -17,16 +18,8 @@ public:
 
 	void setImage(string imageName) { buttonImg.loadImage(imageName); }
 	void setToggleImage(string imageName){ buttonImgToggle.loadImage(imageName); }
-	void setWidth(int w) { button.width = w; }
-	void setHeight(int h) { button.height = h; }
-	void setID(int newId) { ID = newId; }
 	void setWidthPercent(float w){ button.width *= w; }
 	void setHeightPercent(float h){ button.height *= h; }
-	void setPosition(int x, int y){
-		button.x = x;
-		button.y = y;
-	}
-	void setPosition(ofPoint p) { setPosition(p.x, p.y); }
 	void setToggle(bool state){ toggle = state; }
 	void setToggleMode(bool mode) { togglable = mode; }
 
@@ -44,17 +37,7 @@ public:
 	void mouseEntered(ofMouseEventArgs & args) {}
 	void mouseExited(ofMouseEventArgs & args) {}
 
-	ofEvent<const pair<bool, int> > imgButtonEvent;
-
 private:
-
-	float dist;
-
-	ofRectangle button;
-	bool visible, hovering, togglable, toggle, clickable;
 	ofImage		buttonImg;
 	ofImage		buttonImgToggle;
-
-	int			ID;
-
 };

@@ -1,13 +1,12 @@
 #include "ofxImgButton.h"
 
-ofxImgButton::ofxImgButton() {
+ofxImgButton::ofxImgButton() : ofxUIButton() {
 	visible = true;
 	hovering = false;
 	clickable = true;
 	toggle = false;
 	ID = 0;
 	togglable = false;
-	dist = 0;
 }
 
 ofxImgButton::~ofxImgButton() {
@@ -61,6 +60,7 @@ void ofxImgButton::draw(ofPoint p) {
 	draw();
 }
 void ofxImgButton::draw() {
+	ofxUIButton::draw();
 	if (togglable) {
 		if (!toggle) {
 			buttonImg.draw(button.x, button.y, button.width, button.height);
@@ -83,15 +83,16 @@ void ofxImgButton::draw() {
 
 void ofxImgButton::mouseReleased(ofMouseEventArgs & args) {
 	if (clickable && args.button == 0) {
+		ofRectangle button = ofRectangle();
 		if (button.inside(args.x, args.y)) {
 			if (togglable) {
 				toggle = !toggle;
 				pair<bool, int> temp(toggle, ID);
-				ofNotifyEvent(imgButtonEvent, temp, this);
+				ofNotifyEvent(buttonEvent, temp, this);
 			}
 			else {
 				pair<bool, int> temp(false, ID);
-				ofNotifyEvent(imgButtonEvent, temp, this);
+				ofNotifyEvent(buttonEvent, temp, this);
 			}
 		}
 	}
@@ -111,6 +112,6 @@ void ofxImgButton::mouseMoved(ofMouseEventArgs & args) {
 void ofxImgButton::mousePressed(ofMouseEventArgs & args) {
 	if (clickable && args.button == 0 && !togglable && button.inside(args.x, args.y)) {
 		pair<bool, int> temp(true, ID);
-		ofNotifyEvent(imgButtonEvent, temp, this);
+		ofNotifyEvent(buttonEvent, temp, this);
 	}
 }
