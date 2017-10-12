@@ -40,7 +40,7 @@ public:
 
 	}
 
-	void draw(int x, int y, int w, int h){
+	void draw(int x, int y, int w, int h, ofxUIUtils::FontRenderer * renderer){
 		ofPushStyle();
 		if (clickable){
 			dist = ofDist(x + (w / 2), 0, ofGetMouseX(), 0);
@@ -55,7 +55,8 @@ public:
 			ofRect(x, y, w, h);
 		}
 		ofSetColor(textColor);
-		ofDrawBitmapString(title, x + 5, y + (h / 2) + (h / 4));
+		renderer->drawString(title, x + 5, y + (h / 2) + (h / 4));
+		//ofDrawBitmapString(title, x + 5, y + (h / 2) + (h / 4));
 
 		ofSetColor(0, 255);
 		ofSetLineWidth(.25);
@@ -108,7 +109,7 @@ public:
 	void mouseMoved(ofMouseEventArgs & args){}
 	void mouseDragged(ofMouseEventArgs & args){}
 	void mousePressed(ofMouseEventArgs & args){}
-	void mouseScrolled(ofMouseEventArgs & args) {}
+	void mouseScrolled(ofMouseEventArgs & args);
 	void mouseEntered(ofMouseEventArgs & args) {}
 	void mouseExited(ofMouseEventArgs & args) {}
 
@@ -125,10 +126,15 @@ public:
 	bool getToggled() { return toggled; }
 	void setToggled(bool mode) { toggled = mode; mainPanel->setToggle(mode); }
 	int getID() { return _ID; }
+	int getHeight() { return _height; }
+	int getWidth() { return _width; }
+	ofPoint getPosition() { return mainPanel->getPosition(); }
 
-	ofEvent<const pair<string, int> > menuEvent;
+	ofEvent<const tuple<int, string, int> > menuEvent;
 
 	void UIButPressed(const pair<bool, int> & state);
+
+	double verticalOffset;
 
 private:
 	ofTrueTypeFont font;

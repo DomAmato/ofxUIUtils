@@ -31,20 +31,28 @@ void ofxDropDownMenu::draw() {
 		y = menuPos.y;
 
 		ofSetColor(225, 240);
-		ofRect(x - 5, y - 5, _width, _height);
+		/*glEnable(GL_SCISSOR_TEST);
+		glScissor(x - 5, y - 5, _width, _cellHeight * 5);*/
+
+		ofRect(x - 5, y - 5, _width, _cellHeight*MIN(5, menuItems.size()) + 5);
 
 		int color_forText = 0;
 
-		for (int i = 0; i < menuItems.size(); i++) {
+		int startIndex = 0;
+		if (menuItems.size() > 5) {
+			startIndex = MIN(floor(menuItems.size() * verticalOffset), menuItems.size()-5);
+		} 
+		for (int i = startIndex; i-startIndex < MIN(5, menuItems.size()-startIndex); i++) {
 			if (menuItems[i].isActive()) {
 				menuItems[i].setTextColor(ofColor::white);
 			}
 			else {
 				menuItems[i].setTextColor(ofColor::black);
 			}
-			menuItems[i].draw(x - 5, i*_cellHeight + y, _width, _cellHeight);
+			menuItems[i].draw(x - 5, (i - startIndex)*_cellHeight + y, _width, _cellHeight, mainPanel->getFontRenderer());
 
 		}
+		//glDisable(GL_SCISSOR_TEST);
 		ofTranslate(0, 0, -1);
 		ofPopMatrix();
 	}
@@ -65,9 +73,13 @@ void ofxDropDownMenu::addMenuItem(string name) {
 	temp.setVisible(true);
 	temp.setID(IDs++);
 	menuItems.push_back(temp);
-	ofBitmapFont bFont;
-	if (_width < bFont.getBoundingBox(name, 0, 0).width)
-		_width = bFont.getBoundingBox(name, 0, 0).width + 10;
+	//ofBitmapFont bFont;
+	/*if (_width < bFont.getBoundingBox(name, 0, 0).width)
+		_width = bFont.getBoundingBox(name, 0, 0).width + 10;*/
+
+	if (_width < mainPanel->getFontRenderer()->stringWidth(name)) {
+		_width = mainPanel->getFontRenderer()->stringWidth(name) + 10;
+	}
 	_height = (_cellHeight * menuItems.size() + 5);
 }
 
@@ -94,17 +106,26 @@ void ofxDropDownMenu::clearMenuItems() {
 void ofxDropDownMenu::mouseReleased(ofMouseEventArgs& eventArgs) {
 
 	if (eventArgs.button == 0 && toggled) {
-		for (int i = 0; i < menuItems.size(); i++) {
+		int startIndex = 0;
+		if (menuItems.size() > 5) {
+			startIndex = MIN(floor(menuItems.size() * verticalOffset), menuItems.size() - 5);
+		}
+		for (int i = startIndex; i - startIndex < MIN(5, menuItems.size() - startIndex); i++) {
 			if (menuItems[i].isActive()) {
 				toggleTimer = ofGetElapsedTimeMillis();
 				selection = menuItems[i].getTitle();
-				pair<string, int> temp(selection, menuItems[i].getID());
+				tuple<int, string, int> temp(getID(), selection, menuItems[i].getID());
 				ofNotifyEvent(menuEvent, temp, this);
 			}
 		}
 		mainPanel->setToggle(false);
 		toggled = false;
 	}
+}
+
+void ofxDropDownMenu::mouseScrolled(ofMouseEventArgs & args) {
+	verticalOffset = ofClamp(verticalOffset+args.scrollY/20, 0, 1);
+
 }
 
 void ofxDropDownMenu::UIButPressed(const pair<bool, int> & state) {
@@ -116,8 +137,8 @@ void ofxDropDownMenu::UIButPressed(const pair<bool, int> & state) {
 		if (menuPos.x + _width > ofGetWidth())
 			menuPos.x = ofGetWidth() - (_width + 5);
 		menuPos.y = ofGetMouseY();
-		if (menuPos.y + _height > ofGetHeight())
-			menuPos.y = ofGetHeight() - (_height + 5);
+		if (menuPos.y + _cellHeight * 5 > ofGetHeight())
+			menuPos.y = ofGetHeight() - (_cellHeight * 5 + 5);
 	}
 	else {
 		toggled = false;
