@@ -31,14 +31,6 @@ public:
 	void setMax(T max);
 	T getMax();
 
-	void mouseMoved(ofMouseEventArgs & args) {}
-	void mousePressed(ofMouseEventArgs & args);
-	void mouseDragged(ofMouseEventArgs & args);
-	void mouseReleased(ofMouseEventArgs & args);
-	void mouseScrolled(ofMouseEventArgs & args) {}
-	void mouseEntered(ofMouseEventArgs & args) {}
-	void mouseExited(ofMouseEventArgs & args) {}
-
 	void setUpdateOnReleaseOnly(bool bUpdate) { this->bUpdateOnReleaseOnly = bUpdate; }
 
 	void setBackgroundColor(ofColor c) { this->bgc = c; generateDraw(); }
@@ -61,7 +53,16 @@ public:
 	void setValue(T newVal) { value = newVal; }
 	T getValue() { return value; }
 
-protected:
+	void mouseMoved(ofMouseEventArgs & args) {}
+	void mousePressed(ofMouseEventArgs & args);
+	void mouseDragged(ofMouseEventArgs & args);
+	void mouseReleased(ofMouseEventArgs & args);
+	void mouseScrolled(ofMouseEventArgs & args) {}
+	void mouseEntered(ofMouseEventArgs & args) {}
+	void mouseExited(ofMouseEventArgs & args) {}
+
+private:
+
 	ofColor bgc, fgc;
 	ofxUISliderType type;
 	ofxUISliderDirection dir;

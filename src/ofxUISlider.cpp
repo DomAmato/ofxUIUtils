@@ -224,9 +224,9 @@ template<typename T>
 void ofxUISlider<T>::setValue(float mx, float my) {
 	if (sliderRect.inside(mx, my)) {
 		if (dir == UI_SLIDER_HORIZONTAL)
-			value = ofMap(mx, sliderRect.x, sliderRect.x + sliderRect.width, value.getMin(), value.getMax(), true);
+			value = ofMap(mx, sliderRect.x + 1, sliderRect.x + sliderRect.width - barWidth, value.getMin(), value.getMax(), true);
 		else if (dir == UI_SLIDER_VERTICAL)
-			value = ofMap(my, sliderRect.y, sliderRect.y + sliderRect.height, value.getMin(), value.getMax(), true);
+			value = ofMap(my, sliderRect.y + 1, sliderRect.y + sliderRect.height - barWidth, value.getMin(), value.getMax(), true);
 		ofNotifyEvent(sliderEvent, ID, this);
 	}
 }
