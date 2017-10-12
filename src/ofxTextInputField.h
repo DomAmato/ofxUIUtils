@@ -65,7 +65,7 @@ public:
 	void		setBounds(ofPoint p1, ofPoint p2) { setBounds(ofRectangle(p1, p2)); }
 	void		setBounds(ofRectangle r) { bounds = r; }
 
-	void		setText(string s) { if(!multiline) ofStringReplace(text, "\n", ""); text = s; }
+	void		setText(string s) { if (!multiline) ofStringReplace(text, "\n", ""); text = s; if (text.length() < cursorPosition) { cursorPosition = text.length(); } }
 	string		getText() { return text; }
 
 	void		setPlaceholderText(string s) { placeholderText = s; }
