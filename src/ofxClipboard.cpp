@@ -91,7 +91,7 @@ string ofxClipboard::getString()
 		if (!text)
 			return string();
 		else
-			return cocoa::convertNsString(text);
+			return string([text UTF8String], [text lengthOfBytesUsingEncoding:NSUTF8StringEncoding]);
 	}
 	else {
 		return string();
